@@ -1,0 +1,68 @@
+package com.tanhua.server.interceptor;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tanhua.common.utils.Cache;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@Component
+public class RedisCacheInterceptor implements HandlerInterceptor {
+
+    @Value("${tanhua.cache.enable}")
+    private Boolean enable;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //缓存的全局开关的校验
+        if (!enable) {
+            return true;
+        }
+
+        // ......代码略.....
+
+        //缓存命中
+        String redisKey = createRedisKey(request);
+        String cacheData = this.redisTemplate.opsForValue().get(redisKey);
+        if(StringUtils.isEmpty(cacheData)){
+            //缓存未命中
+            return true;
+        }
+
+        // 将data数据进行响应
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json; charset=utf-8");
+        response.getWriter().write(cacheData);
+
+        return false;
+    }
+
+    /**
+     * 生成redis中的key，规则：SERVER_CACHE_DATA_MD5(url + param + token)
+     *
+     * @param request
+     * @return
+     */
+    public static String createRedisKey(HttpServletRequest request) throws Exception {
+        String url = request.getRequestURI();
+        String param = MAPPER.writeValueAsString(request.getParameterMap());
+        String token = request.getHeader("Authorization");
+
+        String data = url + "_" + param + "_" + token;
+        return "SERVER_CACHE_DATA_" + DigestUtils.md5Hex(data);
+    }
+}
