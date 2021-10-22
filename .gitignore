@@ -14,3 +14,5 @@
 /my-tanhua-sso/target/
 /my-tanhua-sso/my-tanhua-sso.iml
 /my-tanhua.iml
+*/test/
+*.iml
