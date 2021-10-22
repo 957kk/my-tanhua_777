@@ -17,6 +17,7 @@
         <module>my-tanhua-server</module>
         <module>my-tanhua-dubbo</module>
         <module>my-tanhua-common</module>
+        <module>my-tanhua-manager</module>
     </modules>
 
     <groupId>cn.itcast.tanhua</groupId>
