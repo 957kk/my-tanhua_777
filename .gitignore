@@ -16,3 +16,4 @@
 /my-tanhua.iml
 */test/
 *.iml
+*/target/
