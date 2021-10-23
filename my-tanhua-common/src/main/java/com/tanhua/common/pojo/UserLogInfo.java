@@ -41,5 +41,9 @@ public class UserLogInfo implements Serializable {
      * 登录时间戳
      */
     private Long loginTime;
+    /**
+     * 登陆设备
+     */
+    private String loginDevice;
 }
 
