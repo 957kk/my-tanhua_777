@@ -10,11 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-tanhua-manager</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>my-tanhua-manager-sso</module>
-        <module>my-tanhua-manager-user-management</module>
-    </modules>
 
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
 
 </project>
