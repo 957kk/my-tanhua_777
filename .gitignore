@@ -15,5 +15,7 @@
 /my-tanhua-sso/target/
 /my-tanhua-sso/my-tanhua-sso.iml
 /my-tanhua.iml
-
-
+*.iml
+*/target/
+/my-tanhua-manager/my-tanhua-mananger-dashboard/my-tanhua-mananger-dashboard.iml
+/my-tanhua-manager/my-tanhua-manager.iml
