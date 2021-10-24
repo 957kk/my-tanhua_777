@@ -18,7 +18,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 public class DashboardStatVo implements Serializable {
-    private static final long serialVersionUID = 362498820763181265L;
+    private static final long serialVersionUID = 36249882076381265L;
     /**
      * 累计用户
      * 最大值: 500

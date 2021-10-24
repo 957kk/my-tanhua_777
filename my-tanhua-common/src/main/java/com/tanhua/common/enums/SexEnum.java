@@ -2,7 +2,9 @@ package com.tanhua.common.enums;
 
 import com.baomidou.mybatisplus.core.enums.IEnum;
 
-public enum SexEnum implements IEnum<Integer> {
+import java.io.Serializable;
+
+public enum SexEnum implements IEnum<Integer>, Serializable {
 
     MAN(1,"男"),
     WOMAN(2,"女"),

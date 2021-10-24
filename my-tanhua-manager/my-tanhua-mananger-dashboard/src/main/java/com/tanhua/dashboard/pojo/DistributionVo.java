@@ -18,7 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DistributionVo implements Serializable {
-    private static final long serialVersionUID = 362498820763181265L;
+    private static final long serialVersionUID = 36249882076318165L;
     /**
      * 行业分布TOP10
      * 最小数量: 10

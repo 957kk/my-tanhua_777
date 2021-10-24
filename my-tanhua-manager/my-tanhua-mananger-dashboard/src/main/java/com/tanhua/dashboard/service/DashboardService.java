@@ -4,22 +4,26 @@ package com.tanhua.dashboard.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tanhua.common.enums.SexEnum;
+import com.tanhua.common.mapper.UserInfoMapper;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.User;
+import com.tanhua.common.pojo.UserInfo;
 import com.tanhua.common.pojo.UserLogInfo;
+import com.tanhua.dashboard.enums.DistributionEnum;
 import com.tanhua.dashboard.enums.MonthEnum;
 import com.tanhua.dashboard.pojo.DashboardStatVo;
+import com.tanhua.dashboard.pojo.DistributionVo;
 import com.tanhua.dashboard.pojo.T_A;
 import com.tanhua.dashboard.pojo.YearsVo;
+import com.tanhua.dashboard.utils.FromCityToProvince;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @program: my-tanhua
@@ -34,6 +38,8 @@ public class DashboardService {
     private UserMapper userMapper;
     @Autowired
     private UserLogInfoMapper_zxk userLogInfoMapper_zxk;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
     private static final Integer WEEK = 7;
     private static final Integer MONTH = 30;
     private static final Integer DAY = 1;
@@ -72,7 +78,7 @@ public class DashboardService {
     }
 
     /**
-     * 新增、活跃用户、次日留存率
+     * 新增,活跃用户,次日留存率
      *
      * @param sd   开始时间戳
      * @param ed   结束时间戳
@@ -96,12 +102,13 @@ public class DashboardService {
                 count = getRetentionRate(sd, ed);
             }
             YearsVo yearsVo = new YearsVo();
-            yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
-            yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
+            yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
+            yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
             return yearsVo;
         }
         return null;
     }
+
     /**
      * 获取留存率
      *
@@ -134,7 +141,7 @@ public class DashboardService {
      * @param day 需要查询的天数
      * @return
      */
-    public Integer activePass(Integer day) {
+    private Integer activePass(Integer day) {
         DateTime dateTime = new DateTime();
         Long max = 0L;
         Long min = 0L;
@@ -285,8 +292,8 @@ public class DashboardService {
             count = 9999;
         }
         YearsVo yearsVo = new YearsVo();
-        yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
-        yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
+        yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
+        yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
         return yearsVo;
     }
 
@@ -306,8 +313,8 @@ public class DashboardService {
             count = 9999;
         }
         YearsVo yearsVo = new YearsVo();
-        yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
-        yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.October.getMonth() + "月").amount(count).build()});
+        yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
+        yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
         return yearsVo;
     }
 
@@ -341,6 +348,199 @@ public class DashboardService {
         wrapper.groupBy("user_id").having("count(*)>1");
         List<Map<String, Object>> userLogInfos = userLogInfoMapper_zxk.selectMaps(wrapper);
         return userLogInfos.size();
+    }
+
+    /**
+     * 注册用户分布，行业top,年龄,性别,地区
+     *
+     * @param sd 开始时间
+     * @param ed 结束时间
+     * @return
+     */
+    public DistributionVo distribution(Long sd, Long ed) {
+        DistributionVo distributionVo = new DistributionVo();
+        List<User> newUserList = this.getNewUserList(sd, ed);
+        List<Object> ids = CollUtil.getFieldValues(newUserList, "id");
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
+
+        distributionVo.setIndustryDistribution(this.getIndustryDistribution(ids));
+        distributionVo.setAgeDistribution(this.getAgeDistribution(ids));
+        distributionVo.setGenderDistribution(this.getGenderDistribution(ids));
+        distributionVo.setLocalDistribution(this.getLocalDistribution(ids));
+        distributionVo.setLocalTotal(this.getLocalTotal(ids));
+        return distributionVo;
+    }
+
+    /**
+     * 获取地区分布 ，华南地区,华北地区,华东地区,华西地区,华中地区
+     * @param ids
+     * @return
+     */
+    private Object[] getLocalTotal(List<Object> ids) {
+        List<String> allRegionList = FromCityToProvince.allRegionList();
+        HashMap<String, Integer> hashMap = this.getLocalDistributionHashMap(ids);
+        HashMap<String, Integer> hashMap1 = new HashMap<>();
+        Set<String> strings = hashMap.keySet();
+        for (String s : allRegionList) {
+            int i=0;
+            for (String string : strings) {
+                if(ObjectUtil.equal(s,FromCityToProvince.findRegion(string))){
+                    i+=hashMap.get(string);
+                }
+                hashMap1.put(s,i);
+            }
+        }
+        ArrayList<Object> objects = new ArrayList<>();
+        Set<String> ss = hashMap1.keySet();
+        for (String string : ss) {
+            objects.add(T_A.builder().title(string).amount(hashMap1.get(string)).build());
+        }
+        return objects.toArray();
+    }
+
+    /**
+     * 获取省分布
+     * @param ids
+     * @return
+     */
+    private Object[] getLocalDistribution(List<Object> ids) {
+        HashMap<String, Integer> hashMap = getLocalDistributionHashMap(ids);
+        ArrayList<Object> objects = new ArrayList<>();
+        Set<String> strings = hashMap.keySet();
+        for (String string : strings) {
+            objects.add(T_A.builder().title(string).amount(hashMap.get(string)).build());
+        }
+        return objects.toArray();
+    }
+
+    /**
+     * 获取地区分布
+     * @param ids
+     * @return
+     */
+    private HashMap<String, Integer> getLocalDistributionHashMap(List<Object> ids) {
+        List<String> provinceList = FromCityToProvince.provinceList();
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
+        HashMap<String, Integer> hashMap = new HashMap<>();
+        for (String s : provinceList) {
+            int i=0;
+            for (UserInfo userInfo : userInfos) {
+                if(ObjectUtil.equal(s,FromCityToProvince.findObjectProvince(userInfo.getCity()))){
+                    i++;
+                }
+                hashMap.put(s,i);
+            }
+        }
+        return hashMap;
+    }
+
+    /**
+     * 获取性别分布
+     * @param ids
+     * @return
+     */
+    private Object[] getGenderDistribution(List<Object> ids) {
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        wrapper.select("user_id,sex,count(*) as age");
+        wrapper.groupBy("sex");
+        wrapper.orderByDesc("age");
+        List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
+        ArrayList<Object> list = new ArrayList<>();
+        for (UserInfo userInfo : userInfos) {
+            if (ObjectUtil.equal(userInfo.getSex(), SexEnum.MAN)) {
+                list.add(T_A.builder().title(DistributionEnum.MAN.getDesc()).amount(userInfo.getAge()).build());
+            } else if (ObjectUtil.equal(userInfo.getSex(), SexEnum.WOMAN)) {
+                list.add(T_A.builder().title(DistributionEnum.WOMAN.getDesc()).amount(userInfo.getAge()).build());
+            }
+        }
+        return list.toArray();
+    }
+
+    /**
+     * 年龄分布
+     *
+     * @param ids
+     * @return
+     */
+    private Object[] getAgeDistribution(List<Object> ids) {
+        Object[] objects = new Object[6];
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
+        List<Object> ages = CollUtil.getFieldValues(userInfos, "age");
+        int one = 0;
+        int two = 0;
+        int three = 0;
+        int four = 0;
+        int five = 0;
+        int six = 0;
+        for (Object age : ages) {
+            // 0-17岁,18-23岁,24-30岁,31-40岁,41-50岁,50岁+
+            if ((int) age <= 17) {
+                one++;
+            } else if ((int) age <= 23) {
+                two++;
+            } else if ((int) age <= 30) {
+                three++;
+            } else if ((int) age <= 40) {
+                four++;
+            } else if ((int) age <= 50) {
+                five++;
+            } else {
+                six++;
+            }
+        }
+        //todo amount, 最大值: 9999 最小值: 50
+        objects[0] = T_A.builder().title(DistributionEnum.ONE.getDesc()).amount(one).build();
+        objects[1] = T_A.builder().title(DistributionEnum.TWO.getDesc()).amount(two).build();
+        objects[2] = T_A.builder().title(DistributionEnum.THREE.getDesc()).amount(three).build();
+        objects[3] = T_A.builder().title(DistributionEnum.FOUR.getDesc()).amount(four).build();
+        objects[4] = T_A.builder().title(DistributionEnum.FIVE.getDesc()).amount(five).build();
+        objects[5] = T_A.builder().title(DistributionEnum.SIX.getDesc()).amount(six).build();
+        return objects;
+    }
+
+    /**
+     * 获取行业分布top10
+     *
+     * @param ids
+     * @return
+     */
+    public Object[] getIndustryDistribution(List<Object> ids) {
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        wrapper.select("user_id,industry,count(*) as age");
+        wrapper.groupBy("industry");
+        wrapper.orderByDesc("age");
+        wrapper.last("limit 0,10");
+        List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
+        ArrayList<T_A> t_a_list = new ArrayList<>();
+        ArrayList<String> list = new ArrayList<>();
+        list.add(DistributionEnum.MANUFACTURING.getDesc());
+        list.add(DistributionEnum.SERVICES.getDesc());
+        list.add(DistributionEnum.EDUCATION.getDesc());
+        list.add(DistributionEnum.ACCOMMODATION.getDesc());
+        list.add(DistributionEnum.ESTATE.getDesc());
+        list.add(DistributionEnum.CATERING.getDesc());
+        list.add(DistributionEnum.COMPUTERINDUSTRY.getDesc());
+        for (UserInfo userInfo : userInfos) {
+            for (String s : list) {
+                if (ObjectUtil.equal(userInfo.getIndustry(), s)) {
+                    if (userInfo.getAge() < 1) {
+                        userInfo.setAge(1);
+                    } else if (userInfo.getAge() > 50) {
+                        userInfo.setAge(50);
+                    }
+                    t_a_list.add(T_A.builder().title(s).amount(userInfo.getAge()).build());
+                }
+            }
+        }
+        return t_a_list.toArray();
     }
 
 }

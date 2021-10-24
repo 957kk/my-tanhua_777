@@ -1,6 +1,7 @@
 package com.tanhua.dashboard.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.tanhua.dashboard.pojo.DistributionVo;
 import com.tanhua.dashboard.pojo.YearsVo;
 import com.tanhua.dashboard.service.DashboardService;
 import com.tanhua.dashboard.pojo.DashboardStatVo;
@@ -30,9 +31,11 @@ public class DashboardController_zxk {
      */
     @GetMapping("distribution")
     public ResponseEntity<Object> distribution(Long sd,Long ed){
-
-
-        return null;
+        DistributionVo distributionVo= this.dashboardService.distribution(sd,ed);
+        if(ObjectUtil.isNull(distributionVo)){
+            return null;
+        }
+        return ResponseEntity.ok(distributionVo);
     }
 
     /**
@@ -43,9 +46,11 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("users")
-    public ResponseEntity<Object> users(String sd, String ed, String type){
-        YearsVo yearsVo=dashboardService.users(Long.parseLong(sd),Long.parseLong(ed),Integer.parseInt(type));
-
+    public ResponseEntity<Object> users(Long sd, Long ed, Integer type){
+        YearsVo yearsVo=dashboardService.users(sd,ed,type);
+        if(ObjectUtil.isNull(yearsVo)){
+            return null;
+        }
         return ResponseEntity.ok(yearsVo);
     }
 

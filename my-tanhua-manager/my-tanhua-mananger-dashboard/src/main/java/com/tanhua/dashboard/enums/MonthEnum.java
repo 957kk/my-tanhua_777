@@ -12,62 +12,62 @@ public enum MonthEnum implements Serializable {
     /**
      * 一月
      */
-    JANUARY(1),
+    JANUARY("1月"),
     /**
      * 二月
      */
-    FEBRUARY(2),
+    FEBRUARY("2月"),
     /**
      * 三月
      */
-    March(3),
+    MARCH("3月"),
     /**
      * 四月
      */
-    April(4),
+    APRIL("4月"),
     /**
      * 五月
      */
-    May(5),
+    MAY("5月"),
     /**
      * 六月
      */
-    June(6),
+    JUNE("6月"),
     /**
      * 七月
      */
-    July(7),
+    JULY("7月"),
     /**
      * 八月
      */
-    August(8),
+    AUGUST("8月"),
     /**
      * 九月
      */
-    September(9),
+    SEPTEMBER("9月"),
     /**
      * 十月
      */
-    October(10),
+    OCTOBER("10月"),
     /**
      * 十一月
      */
-    November(11),
+    NOVEMBER("11月"),
     /**
      * 十二月
      */
-    December(12)
+    DECEMBER("12月")
     ;
     /**
      * 月份
      */
-    private final  Integer month;
+    private final  String month;
 
-    MonthEnum(Integer month) {
+    MonthEnum(String month) {
         this.month = month;
     }
 
-    public Integer getMonth() {
+    public String getMonth() {
         return month;
     }
 }
