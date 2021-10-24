@@ -12,11 +12,10 @@
     <artifactId>my-tanhua-manager</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>my-tanhua-mananger-dashboard</module>
+        <module>my-tanhua-manager-dashboard</module>
+        <module>my-tanhua-manager-sso</module>
     </modules>
-    <modules>
-    <module>my-tanhua-manager-sso</module>
-    </modules>
+
 
 
     <properties>
