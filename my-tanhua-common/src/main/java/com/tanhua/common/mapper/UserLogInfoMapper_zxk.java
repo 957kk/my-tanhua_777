@@ -1,11 +1,8 @@
 package com.tanhua.common.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tanhua.common.pojo.UserLogInfo;
-import org.apache.ibatis.annotations.Mapper;
-
-import java.util.List;
+import org.springframework.stereotype.Repository;
 
 /**
  * @program: my-tanhua
@@ -13,6 +10,6 @@ import java.util.List;
  * @author: xkZhao
  * @Create: 2021-10-22 16:16
  **/
-@Mapper
+@Repository
 public interface UserLogInfoMapper_zxk extends BaseMapper<UserLogInfo> {
 }
