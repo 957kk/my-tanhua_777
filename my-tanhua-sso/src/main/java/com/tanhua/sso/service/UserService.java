@@ -3,8 +3,10 @@ package com.tanhua.sso.service;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tanhua.common.mapper.UserLogInMapper_yt;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.User;
+import com.tanhua.common.pojo.UserlogIn_yt;
 import com.tanhua.dubbo.server.api.HuanXinApi;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -43,6 +45,9 @@ public class UserService {
     @Reference(version = "1.0.0")
     private HuanXinApi huanXinApi;
 
+    @Autowired
+    private UserLogInMapper_yt userLogInMapper_yt;
+
 
     /**
      * 用户登录
@@ -78,6 +83,14 @@ public class UserService {
             //注册新用户
             this.userMapper.insert(user);
             isNew = true;
+
+            //将注册用户信息写到注册表
+            UserlogIn_yt userlogIn_yt = new UserlogIn_yt();
+            userlogIn_yt.setPhone(phone);
+            userlogIn_yt.setLog("注册成功");
+            userlogIn_yt.setTime(System.currentTimeMillis());
+
+            this.userLogInMapper_yt.insert(userlogIn_yt);
 
             //将该用户信息注册到环信平台
             Boolean register = this.huanXinApi.register(user.getId());
