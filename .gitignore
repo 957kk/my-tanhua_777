@@ -17,3 +17,7 @@
 /my-tanhua.iml
 /my-tanhua-manager/my-tanhua-manager.iml
 
+*.iml
+*/target/
+/my-tanhua-manager/my-tanhua-mananger-dashboard/my-tanhua-mananger-dashboard.iml
+/my-tanhua-manager/my-tanhua-manager.iml
