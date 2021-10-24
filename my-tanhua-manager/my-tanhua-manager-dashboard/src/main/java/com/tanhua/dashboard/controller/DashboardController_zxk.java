@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Create: 2021-10-22 18:33
  **/
 @RestController
-@RequestMapping("dashboard")
+@RequestMapping("management/dashboard")
 public class DashboardController_zxk {
     @Autowired
     private DashboardService dashboardService;

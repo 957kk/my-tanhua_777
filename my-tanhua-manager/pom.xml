@@ -14,6 +14,7 @@
     <modules>
         <module>my-tanhua-manager-dashboard</module>
         <module>my-tanhua-manager-sso</module>
+        <module>my-tanhua-manager-user-management</module>
     </modules>
 
 

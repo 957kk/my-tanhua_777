@@ -57,10 +57,8 @@ public class DashboardService {
          */
         Integer integer = userMapper.selectCount(null);
         dashboardStatVo.setCumulativeUsers(integer);
-        //todo
-        dashboardStatVo.setActivePassWeek(activePass(WEEK));
-        //todo
-        dashboardStatVo.setActivePassMonth(activePass(MONTH));
+        dashboardStatVo.setActivePassWeek(getActiveWeekOrMonth(WEEK));
+        dashboardStatVo.setActivePassMonth(getActiveWeekOrMonth(MONTH));
         dashboardStatVo.setNewUsersToday(newUsers(DAY));
         dashboardStatVo.setNewUsersTodayRate(newUsersTodayRate());
         dashboardStatVo.setLoginTimesToday(DAY);
@@ -134,6 +132,7 @@ public class DashboardService {
     }
 
     /**
+     * 失效
      * 查询累计日活
      * 最大值: 500
      * 最小值: 0
@@ -334,7 +333,7 @@ public class DashboardService {
     }
 
     /**
-     * 获取活跃用户
+     * 获取活跃用户 默认在范围时间内登录一次或以上即为活跃用户
      *
      * @param sd 开始时间
      * @param ed 结束时间
@@ -348,6 +347,17 @@ public class DashboardService {
         wrapper.groupBy("user_id").having("count(*)>1");
         List<Map<String, Object>> userLogInfos = userLogInfoMapper_zxk.selectMaps(wrapper);
         return userLogInfos.size();
+    }
+
+    /**
+     * 获取累计天数内的活跃用户
+     * @param day
+     * @return
+     */
+    public Integer getActiveWeekOrMonth(Integer day){
+        DateTime dateTime = new DateTime();
+        return getActiveUsersCount(dateTime.withMillisOfDay(0).plusDays(-day).getMillis(),
+                System.currentTimeMillis());
     }
 
     /**
