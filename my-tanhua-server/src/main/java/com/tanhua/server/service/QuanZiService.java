@@ -83,7 +83,7 @@ public class QuanZiService {
         //当前用户
         User user = UserThreadLocal.get();
 
-        quanZiVo.setCommentCount(0); //TODO 评论数
+        quanZiVo.setCommentCount(Convert.toInt(quanZiApi.queryCommentCount(Convert.toStr(quanZiVo.getId()))));
         quanZiVo.setDistance("1.2公里"); //TODO 距离
         quanZiVo.setHasLiked(this.quanZiApi.queryUserIsLike(user.getId(), quanZiVo.getId()) ? 1 : 0); //是否点赞（1是，0否）
         quanZiVo.setLikeCount(Convert.toInt(this.quanZiApi.queryLikeCount(quanZiVo.getId()))); //点赞数
