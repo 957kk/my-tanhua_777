@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsersListVOMXY {
+public class UsersListVOMXY implements Serializable {
     private Integer id;
     private String logo;
     private String logoStatus;//头像状态

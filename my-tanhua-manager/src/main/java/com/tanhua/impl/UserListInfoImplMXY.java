@@ -4,19 +4,16 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tanhua.common.enums.SexEnum;
-import com.tanhua.common.mapper.AccountStatusMapperMXY;
+import com.tanhua.common.mapper.UserFreezeMapperMXY;
 import com.tanhua.common.mapper.UserInfoMapper;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
 import com.tanhua.common.mapper.UserMapper;
-import com.tanhua.common.pojo.AccountStatusMXY;
 import com.tanhua.common.pojo.User;
+import com.tanhua.common.pojo.UserFreezeMXY;
 import com.tanhua.common.pojo.UserInfo;
 import com.tanhua.common.pojo.UserLogInfo;
 import com.tanhua.vo.PageResultMXY;
-
 import com.tanhua.vo.UsersListVOMXY;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +27,7 @@ import java.util.Map;
 @Slf4j
 public class UserListInfoImplMXY {
     @Autowired
-    private AccountStatusMapperMXY accountStatusMapperMXY;
+    private UserFreezeMapperMXY userFreezeMapperMXY;
     @Autowired
     private UserInfoMapper userInfoMapper;
     @Autowired
@@ -44,12 +41,6 @@ public class UserListInfoImplMXY {
         pageResultMXY.setPagesize(Convert.toInt(param.get("pagesize")));
         QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>();
 
-        Page<UserInfo> page = new Page<>();
-        if(ObjectUtil.isNotEmpty(param.get("page"))&&ObjectUtil.isNotEmpty(param.get("pagesize"))){
-            //分页查询
-            page.setCurrent(Convert.toLong(param.get("page")));
-            page.setSize(Convert.toLong(param.get("pagesize")));
-        }
 
         if(ObjectUtil.isNotEmpty(param.get("nickname"))){
             queryWrapper.like("nick_name", param.get("nickname"));
@@ -62,9 +53,7 @@ public class UserListInfoImplMXY {
         }
         //查询userInfor表获取列表
 
-        IPage<UserInfo> userInfoIPage = userInfoMapper.selectPage(page, queryWrapper);
-        List<UserInfo> userInfoList = userInfoIPage.getRecords();
-
+        List<UserInfo> userInfoList = userInfoMapper.selectList(queryWrapper);
         //List<UserInfo> userInfoList = userInfoMapper.selectList(queryWrapper);
         if (CollUtil.isEmpty(userInfoList)) {
             log.error("查询用户信息列表出错");
@@ -83,9 +72,9 @@ public class UserListInfoImplMXY {
         queryWrapper.in("id",userIdList);
         List<User> users = userMapper.selectList(wapper);
         //查询用户状态表获取用户状态信息
-        QueryWrapper<AccountStatusMXY> query = new QueryWrapper<>();
-        query.in("userId",userIdList);
-        List<AccountStatusMXY> accountStatusList = accountStatusMapperMXY.selectList(query);
+        QueryWrapper<UserFreezeMXY> query = new QueryWrapper<>();
+        query.in("user_id",userIdList);
+        List<UserFreezeMXY> userFreezeMXYList = userFreezeMapperMXY.selectList(query);
         //查询用户登录信息表获取用户的登录信息
         List<UserLogInfo> userLogInfos = new ArrayList<>();
         for (Long userId : userIdList) {
@@ -117,13 +106,13 @@ public class UserListInfoImplMXY {
                     break;
                 }
             }
-            for (AccountStatusMXY accountStatusMXY : accountStatusList) {
-                if (userInfo.getUserId() == accountStatusMXY.getUserid()) {
+            for (UserFreezeMXY userFreezeMXY : userFreezeMXYList) {
+                if (userInfo.getUserId() == Convert.toLong(userFreezeMXY.getUserId())) {
                     usersListVOMXY.setUserStatus(2 + "");
                     break;
                 }
             }
-            if(null==usersListVOMXY.getUserStatus()){
+            if(ObjectUtil.isEmpty(usersListVOMXY.getUserStatus())){
                 usersListVOMXY.setUserStatus(1 + "");
             }
             for (UserLogInfo userLogInfo : userLogInfos) {
@@ -134,7 +123,8 @@ public class UserListInfoImplMXY {
             }
             usersListVOList.add(usersListVOMXY);
         }
-        pageResultMXY.setItems(usersListVOList);
+        List<UsersListVOMXY> page = CollUtil.page(Convert.toInt(param.get("page")) - 1, Convert.toInt(param.get("pagesize")), usersListVOList);
+        pageResultMXY.setItems(page);
         return pageResultMXY;
     }
 }

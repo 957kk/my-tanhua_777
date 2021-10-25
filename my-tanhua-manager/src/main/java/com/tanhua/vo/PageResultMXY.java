@@ -15,5 +15,5 @@ public class PageResultMXY implements Serializable {
     private Integer pagesize;
     private Integer pages;
     private Integer page;
-    private List<UsersListVOMXY> items;
+    private List items;
 }

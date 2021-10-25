@@ -15,7 +15,7 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
  * @Create: 2021-10-22 19:54
  **/
 @MapperScan("com.tanhua.common.mapper")
-@SpringBootApplication(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class}) //排除mongo的自动配置
+@SpringBootApplication//排除mongo的自动配置
 //@ComponentScan(basePackages = "com.tanhua")
 public class DashboardApplication {
 

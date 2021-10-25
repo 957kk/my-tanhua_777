@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInfoVOMXY {
+public class UserInfoVOMXY implements Serializable {
     private Integer id;
     private String nickname;
     private String mobile;

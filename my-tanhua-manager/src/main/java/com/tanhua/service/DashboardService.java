@@ -86,10 +86,10 @@ public class DashboardService {
     public YearsVo users(Long sd, Long ed, Integer type) {
         if (ObjectUtil.isAllNotEmpty(sd, ed, type)) {
             DateTime dateTime = new DateTime();
-            if(sd>ed){
+            if (sd > ed) {
                 return null;
-            }else if(ObjectUtil.equal(sd,ed)){
-                sd=dateTime.withMillisOfDay(0).plusDays(0).getMillis();
+            } else if (ObjectUtil.equal(sd, ed)) {
+                sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
             }
             Integer count = 0;
             if (101 == type) {
@@ -122,14 +122,14 @@ public class DashboardService {
      */
     public Integer getRetentionRate(Long sd, Long ed) {
         DateTime dateTime = new DateTime();
-        if(sd>ed){
+        if (sd > ed) {
             return null;
-        }else if(ObjectUtil.equal(sd,ed)){
-            sd=dateTime.withMillisOfDay(0).plusDays(0).getMillis();
+        } else if (ObjectUtil.equal(sd, ed)) {
+            sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
         }
         List<User> newUserList = getNewUserList(sd, ed);
         List<Object> id = CollUtil.getFieldValues(newUserList, "id");
-        if(ObjectUtil.isEmpty(id)){
+        if (ObjectUtil.isEmpty(id)) {
             id.add(0000000000);
         }
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
@@ -279,9 +279,9 @@ public class DashboardService {
      * @return
      */
     private Integer rate(Integer t, Integer y) {
-        if(t==0){
+        if (t == 0) {
             return y;
-        }else if(y==0){
+        } else if (y == 0) {
             return -t;
         }
         double f = t.doubleValue() / y.doubleValue();
@@ -346,7 +346,7 @@ public class DashboardService {
     private List<User> getNewUserList(Long sd, Long ed) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.ge("created", new Date(sd));
-        if(ed>=sd){
+        if (ed >= sd) {
             wrapper.lt("created", new Date(ed));
         }
         List<User> userList = this.userMapper.selectList(wrapper);
@@ -372,10 +372,11 @@ public class DashboardService {
 
     /**
      * 获取累计天数内的活跃用户
+     *
      * @param day
      * @return
      */
-    public Integer getActiveWeekOrMonth(Integer day){
+    public Integer getActiveWeekOrMonth(Integer day) {
         DateTime dateTime = new DateTime();
         return getActiveUsersCount(dateTime.withMillisOfDay(0).plusDays(-day).getMillis(),
                 System.currentTimeMillis());
@@ -390,18 +391,18 @@ public class DashboardService {
      */
     public DistributionVo distribution(Long sd, Long ed) {
         DateTime dateTime = new DateTime();
-        if(sd>ed){
+        if (sd > ed) {
             return null;
-        }else if(ObjectUtil.equal(sd,ed)){
-            sd=dateTime.withMillisOfDay(0).plusDays(0).getMillis();
+        } else if (ObjectUtil.equal(sd, ed)) {
+            sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
         }
         DistributionVo distributionVo = new DistributionVo();
         List<User> newUserList = this.getNewUserList(sd, ed);
         List<Object> ids = CollUtil.getFieldValues(newUserList, "id");
-        if(ObjectUtil.isEmpty(ids)){
+        if (ObjectUtil.isEmpty(ids)) {
             ids.add(0000000000);
         }
-       // QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        // QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
         //wrapper.in("user_id", ids);
         //List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
 
@@ -415,6 +416,7 @@ public class DashboardService {
 
     /**
      * 获取地区分布 ，华南地区,华北地区,华东地区,华西地区,华中地区
+     *
      * @param ids
      * @return
      */
@@ -424,12 +426,12 @@ public class DashboardService {
         HashMap<String, Integer> hashMap1 = new HashMap<>();
         Set<String> strings = hashMap.keySet();
         for (String s : allRegionList) {
-            int i=0;
+            int i = 0;
             for (String string : strings) {
-                if(ObjectUtil.equal(s,FromCityToProvince.findRegion(string))){
-                    i+=hashMap.get(string);
+                if (ObjectUtil.equal(s, FromCityToProvince.findRegion(string))) {
+                    i += hashMap.get(string);
                 }
-                hashMap1.put(s,i);
+                hashMap1.put(s, i);
             }
         }
         ArrayList<Object> objects = new ArrayList<>();
@@ -442,6 +444,7 @@ public class DashboardService {
 
     /**
      * 获取省分布
+     *
      * @param ids
      * @return
      */
@@ -457,6 +460,7 @@ public class DashboardService {
 
     /**
      * 获取地区分布
+     *
      * @param ids
      * @return
      */
@@ -467,12 +471,12 @@ public class DashboardService {
         List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
         HashMap<String, Integer> hashMap = new HashMap<>();
         for (String s : provinceList) {
-            int i=0;
+            int i = 0;
             for (UserInfo userInfo : userInfos) {
-                if(ObjectUtil.equal(s,FromCityToProvince.findObjectProvince(userInfo.getCity()))){
+                if (ObjectUtil.equal(s, FromCityToProvince.findObjectProvince(userInfo.getCity()))) {
                     i++;
                 }
-                hashMap.put(s,i);
+                hashMap.put(s, i);
             }
         }
         return hashMap;
@@ -480,6 +484,7 @@ public class DashboardService {
 
     /**
      * 获取性别分布
+     *
      * @param ids
      * @return
      */
@@ -512,9 +517,9 @@ public class DashboardService {
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
         wrapper.in("user_id", ids);
         List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
-        List<Object> ages = CollUtil.getFieldValues(userInfos, "age");
-        if(ObjectUtil.isEmpty(ages)){
-            ages.add(0000000000);
+        List<Integer> ages = CollUtil.getFieldValues(userInfos, "age", Integer.class);
+        if (ObjectUtil.isEmpty(ages)) {
+            ages.add(0);
         }
         int one = 0;
         int two = 0;
@@ -522,17 +527,17 @@ public class DashboardService {
         int four = 0;
         int five = 0;
         int six = 0;
-        for (Object age : ages) {
+        for (Integer age : ages) {
             // 0-17岁,18-23岁,24-30岁,31-40岁,41-50岁,50岁+
-            if ((int) age <= 17) {
+            if (age <= 17) {
                 one++;
-            } else if ((int) age <= 23) {
+            } else if (age <= 23) {
                 two++;
-            } else if ((int) age <= 30) {
+            } else if (age <= 30) {
                 three++;
-            } else if ((int) age <= 40) {
+            } else if (age <= 40) {
                 four++;
-            } else if ((int) age <= 50) {
+            } else if (age <= 50) {
                 five++;
             } else {
                 six++;
@@ -560,7 +565,7 @@ public class DashboardService {
         wrapper.select("user_id,industry,count(*) as age");
         wrapper.groupBy("industry");
         wrapper.orderByDesc("age");
-      //  wrapper.last("limit 0,10");
+        //  wrapper.last("limit 0,10");
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
         ArrayList<T_A> t_a_list = new ArrayList<>();
         ArrayList<String> list = new ArrayList<>();

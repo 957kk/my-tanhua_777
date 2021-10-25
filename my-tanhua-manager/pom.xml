@@ -39,17 +39,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <!--  &lt;!&ndash;dubbo的springboot支持&ndash;&gt;
+          <!--dubbo的springboot支持-->
           <dependency>
               <groupId>com.alibaba.boot</groupId>
               <artifactId>dubbo-spring-boot-starter</artifactId>
           </dependency>
-          &lt;!&ndash;dubbo框架&ndash;&gt;
+          <!--dubbo框架-->
           <dependency>
               <groupId>com.alibaba</groupId>
               <artifactId>dubbo</artifactId>
           </dependency>
-          &lt;!&ndash;zk依赖&ndash;&gt;
+          <!--zk依赖-->
           <dependency>
               <groupId>org.apache.zookeeper</groupId>
               <artifactId>zookeeper</artifactId>
@@ -57,7 +57,7 @@
           <dependency>
               <groupId>com.github.sgroschupf</groupId>
               <artifactId>zkclient</artifactId>
-          </dependency>-->
+          </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
