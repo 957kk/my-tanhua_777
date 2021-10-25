@@ -53,7 +53,10 @@ public class DataStatisticsController_zxk {
     public ResponseEntity<Object> registrationOfRetained(Long sd, Long ed, Integer sex) {
         TreeMap<Long, RegistrationVo> map = this.dataStatisticsService.getRegistrationVo(sd, ed, sex);
 
-        return null;
+        if(ObjectUtil.isNull(map)){
+            return ResponseEntity.ok("请输入正常时间范围，且不为空");
+        }
+        return ResponseEntity.ok(map);
     }
 
 }

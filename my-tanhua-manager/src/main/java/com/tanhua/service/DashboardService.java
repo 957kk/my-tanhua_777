@@ -124,7 +124,7 @@ public class DashboardService {
     public Integer getRetentionRate(Long sd, Long ed) {
         DateTime dateTime = new DateTime();
         if (sd > ed) {
-            return null;
+            return 0;
         } else if (ObjectUtil.equal(sd, ed)) {
             sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
         }
@@ -231,6 +231,7 @@ public class DashboardService {
         return userInfoMapper.selectList(wrapper);
     }
 
+
     /**
      * 查询注册人数
      *
@@ -260,19 +261,20 @@ public class DashboardService {
      */
     private Integer newUsersTodayRate() {
         return rate(newUsers(System.currentTimeMillis()).size(),
-                newUsers(System.currentTimeMillis() - 3600 - 24 - 1000).size());
+                newUsers(System.currentTimeMillis() - 3600 * 24 * 1000).size());
     }
 
     /**
      * 注册之后的登录率 留存率
+     *
      * @param sd
      * @param ids
      * @return
      */
-    public Integer getRetentionRate(Long sd,List<Long> ids) {
+    public Integer getRetentionRate(Long sd, List<Long> ids) {
         DateTime dateTime1 = new DateTime(sd, DateTimeZone.forID("+08:00"));
         if (ObjectUtil.isEmpty(ids)) {
-           return 0;
+            return 0;
         }
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
         wrapper.select("distinct user_id");
@@ -281,16 +283,17 @@ public class DashboardService {
                 dateTime1.withMillisOfDay(0).plusDays(1).getMillis());
         wrapper.in("user_id", ids);
         List<UserLogInfo> userLogInfos = this.userLogInfoMapper_zxk.selectList(wrapper);
-        if(ObjectUtil.isEmpty(userLogInfos)){
+        if (ObjectUtil.isEmpty(userLogInfos)) {
             return 0;
         }
-         Integer rate = this.rate(userLogInfos.size(), ids.size());
-        if (rate < 0) {
-            rate = -rate;
-        }
-        return rate;
+        int t=userLogInfos.size();
+        int y= ids.size();
+        double f = t  / (double) y;
+        BigDecimal b = new BigDecimal(f);
+        //保留两位小数
+        double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return (int) (f1 * 100);
     }
-
 
 
     /**
@@ -326,10 +329,11 @@ public class DashboardService {
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
         wrapper.ge("login_time", dateTime.withMillisOfDay(0).plusDays(0).getMillis());
         wrapper.lt("login_time", dateTime.withMillisOfDay(0).plusDays(1).getMillis());
+        List<UserLogInfo> userLogInfos = userLogInfoMapper_zxk.selectList(wrapper);
         Integer count = this.userLogInfoMapper_zxk.selectCount(wrapper);
-        if (count > 500) {
+      /*  if (count > 500) {
             return 500;
-        }
+        }*/
         return count;
     }
 
@@ -340,7 +344,7 @@ public class DashboardService {
      */
     private Integer loginTimesTodayRate() {
         return rate(loginTimes(System.currentTimeMillis()),
-                loginTimes(System.currentTimeMillis() - 3600 - 24 - 1000));
+                loginTimes(System.currentTimeMillis() - 3600 * 24 * 1000));
     }
 
     /**
@@ -385,20 +389,17 @@ public class DashboardService {
      */
     private Integer rate(Integer t, Integer y) {
         if (t == 0) {
-            return -y*100;
+            return -y * 100;
         } else if (y == 0) {
-            return t*100;
-        }else if(0==t&&y==0){
+            return t * 100;
+        } else if (0 == t && y == 0) {
             return 0;
         }
-        double f = t.doubleValue() / y.doubleValue();
+        double f = (t - y) / y.doubleValue();
         BigDecimal b = new BigDecimal(f);
         //保留两位小数
         double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        if (t > y) {
-            return (int) (f1 * 100);
-        }
-        return -(int) (f1 * 100);
+        return (int) (f1 * 100);
     }
 
     /**
@@ -689,7 +690,7 @@ public class DashboardService {
         wrapper.select("user_id,industry,count(*) as age");
         wrapper.groupBy("industry");
         wrapper.orderByDesc("age");
-        //  wrapper.last("limit 0,10");
+        wrapper.last("limit 0,10");
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
         ArrayList<T_A> t_a_list = new ArrayList<>();
         ArrayList<String> list = new ArrayList<>();

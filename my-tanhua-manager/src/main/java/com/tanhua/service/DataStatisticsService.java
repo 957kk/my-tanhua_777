@@ -3,6 +3,7 @@ package com.tanhua.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.tanhua.common.enums.SexEnum;
 import com.tanhua.common.pojo.DailyDate;
 import com.tanhua.common.pojo.UserInfo;
 import com.tanhua.pojo.T_A;
@@ -12,9 +13,7 @@ import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @program: my-tanhua_777
@@ -64,8 +63,9 @@ public class DataStatisticsService {
 
     /**
      * 获取  TreeMap<Long, DailyDate>类型的map 对DailyDate进行数据封装
-     * @param sd 开始时间戳
-     * @param ed 结束时间戳
+     *
+     * @param sd  开始时间戳
+     * @param ed  结束时间戳
      * @param sex 性别
      * @return
      */
@@ -94,46 +94,60 @@ public class DataStatisticsService {
             if (sd > ed) {
                 return null;
             } else {
-                RegistrationVo registrationVo = new RegistrationVo();
-
-
-
-
-
+                TreeMap<Long, RegistrationVo> map = getLongRegistrationVoMap(sd, ed, sex);
+                return map;
             }
         }
-
         return null;
     }
 
     /**
      * 获取  TreeMap<Long, RegistrationVo>类型的map 对RegistrationVo进行数据封装
-     * @param sd 开始时间戳
-     * @param ed 结束时间戳
+     *
+     * @param sd  开始时间戳
+     * @param ed  结束时间戳
      * @param sex 性别
      * @return
      */
     public TreeMap<Long, RegistrationVo> getLongRegistrationVoMap(Long sd, Long ed, Integer sex) {
-        TreeMap<Long, RegistrationVo> map1 = new TreeMap<>();
+        TreeMap<Long, RegistrationVo> map1 = new TreeMap<>(new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+                return o2.intValue()-o1.intValue();
+            }
+        });
         for (int i = 0; ; i++) {
             RegistrationVo registrationVo = new RegistrationVo();
-            DailyDate dailyDate1 = new DailyDate();
             //todo
             registrationVo.setDate(new DateTime(sd, DateTimeZone.forID("+08:00")));
             List<UserInfo> userInfos = dashboardService.newUserInfo(sd);
-            registrationVo.setRegistrationCount(userInfos.size());
-            Object[] objects=new Object[8];
-            List<Long> ids = CollUtil.getFieldValues(userInfos, "userId", Long.class);
-            Long st=sd;
+            List<Long> ids = null;
+            if (ObjectUtil.isNotNull(sex)) {
+                List<UserInfo> userInfos1 = new ArrayList<>();
+                for (UserInfo userInfo : userInfos) {
+                    if (ObjectUtil.equal(userInfo.getSex().getValue(), sex)) {
+                        userInfos1.add(userInfo);
+                    }
+                }
+                registrationVo.setRegistrationCount(userInfos1.size());
+                ids = CollUtil.getFieldValues(userInfos1, "userId", Long.class);
+            } else {
+                registrationVo.setRegistrationCount(userInfos.size());
+                ids = CollUtil.getFieldValues(userInfos, "userId", Long.class);
+            }
+
+            Object[] objects = new Object[8];
+            Long st = sd;
             for (int j = 0; j < objects.length; j++) {
-                if(st>System.currentTimeMillis()||ObjectUtil.isEmpty(ids)){
+                if (st > new DateTime(System.currentTimeMillis()).withMillisOfDay(0).plusDays(1).getMillis() || ObjectUtil.isEmpty(ids)) {
                     objects[j] = T_A.builder().title(1 + j + "").amount(0).build();
-                }else {
+                } else {
                     objects[j] = T_A.builder().title(1 + j + "").amount(dashboardService.getRetentionRate(st, ids)).build();
-                }if(j==objects.length-2){
-                    st+=23*DAY;
-                }else {
-                    st+=DAY;
+                }
+                if (j == objects.length - 2) {
+                    st += 23 * DAY;
+                } else {
+                    st += DAY;
                 }
             }
             registrationVo.setRate(objects);
