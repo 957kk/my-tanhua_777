@@ -63,7 +63,8 @@ public class DashboardController_zxk {
     public ResponseEntity<Object> users(Long sd, Long ed, Integer type) {
         VerifyCode code = VerifyThreadLocal.get();
         try {
-            YearsVo yearsVo = dashboardService.users(sd, ed, type);
+            //YearsVo yearsVo = dashboardService.users(sd, ed, type);
+            YearsVo yearsVo = dashboardService.userss(sd, ed, type);
             if (ObjectUtil.isNull(yearsVo)) {
                 return null;
             }

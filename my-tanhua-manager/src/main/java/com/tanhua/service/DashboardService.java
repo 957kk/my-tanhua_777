@@ -2,6 +2,7 @@ package com.tanhua.service;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tanhua.common.enums.SexEnum;
@@ -43,7 +44,8 @@ public class DashboardService {
     private UserInfoMapper userInfoMapper;
     private static final Integer WEEK = 7;
     private static final Integer MONTH = 30;
-    private static final Integer DAY = 1;
+    private static final Integer ONE = 1;
+    private static final Long DAY = 3600 * 24 * 1000L;
 
 
     /**
@@ -64,11 +66,11 @@ public class DashboardService {
         dashboardStatVo.setNewUsersTodayRate(newUsersTodayRate());
         dashboardStatVo.setLoginTimesToday(loginTimes(System.currentTimeMillis()));
         dashboardStatVo.setLoginTimesTodayRate(loginTimesTodayRate());
-        dashboardStatVo.setActiveUsersToday(activeUsers(DAY));
-        dashboardStatVo.setActiveUsersTodayRate(activeUsersRate(DAY));
+        dashboardStatVo.setActiveUsersToday(activeUsers(ONE));
+        dashboardStatVo.setActiveUsersTodayRate(activeUsersRate(ONE));
         dashboardStatVo.setUseTimePassWeek(0);
-        dashboardStatVo.setActiveUsersYesterday(activeUsers(DAY + DAY));
-        dashboardStatVo.setActiveUsersYesterdayRate(activeUsersRate(DAY + DAY));
+        dashboardStatVo.setActiveUsersYesterday(activeUsers(ONE + ONE));
+        dashboardStatVo.setActiveUsersYesterdayRate(activeUsersRate(ONE + ONE));
         if (ObjectUtil.isNull(dashboardStatVo)) {
             return null;
         }
@@ -86,7 +88,7 @@ public class DashboardService {
      */
     public YearsVo users(Long sd, Long ed, Integer type) {
         if (ObjectUtil.isAllNotEmpty(sd, ed, type)) {
-            DateTime dateTime = new DateTime(sd,DateTimeZone.forID("+08:00"));
+            DateTime dateTime = new DateTime(sd, DateTimeZone.forID("+08:00"));
             DateTime dateTime1 = new DateTime(ed, DateTimeZone.forID("+08:00"));
             if (sd > ed) {
                 return null;
@@ -94,8 +96,9 @@ public class DashboardService {
                 sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
             }
             Integer count = 0;
-            Integer count1=0;
+            Integer count1 = 0;
             if (101 == type) {
+
                 count = getNewUserList(sd, ed).size();
                 count1 = getNewUserList(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
                         dateTime1.withMillisOfDay(0).plusYears(-1).getMillis()).size();
@@ -113,16 +116,95 @@ public class DashboardService {
             }*/
             if (103 == type) {
                 count = getRetentionRate(sd, ed);
-                count1=getRetentionRate(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
+                count1 = getRetentionRate(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
                         dateTime1.withMillisOfDay(0).plusYears(-1).getMillis());
             }
             YearsVo yearsVo = new YearsVo();
-            yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count1).build()});
-            yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
+            yearsVo.setLastYear(new Object[]{T_A.builder().title("1号").amount(count1).build(), T_A.builder().title("2号").amount(16).build(), T_A.builder().title("3号").amount(18).build()});
+            yearsVo.setThisYear(new Object[]{T_A.builder().title("1号").amount(count).build(), T_A.builder().title("2号").amount(16).build(), T_A.builder().title("3号").amount(18).build()});
             return yearsVo;
         }
         return null;
     }
+
+
+    /**
+     * 新增,活跃用户,次日留存率
+     *
+     * @param sd   开始时间戳
+     * @param ed   结束时间戳
+     * @param type 101 新增 102 活跃用户 103 次日留存率
+     * @return
+     */
+    public YearsVo userss(Long sd, Long ed, Integer type) {
+        if (ObjectUtil.isAllNotEmpty(sd, ed, type)) {
+            DateTime dateTime = new DateTime(sd, DateTimeZone.forID("+08:00"));
+            if (sd > ed) {
+                return null;
+            } else if (ObjectUtil.equal(sd, ed)) {
+                sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
+            }
+            Integer count = 0;
+            Integer count1 = 0;
+            List<Object> objects = new ArrayList<>();
+            List<Object> objects2 = new ArrayList<>();
+            if (101 == type) {
+                for (int i = 0; ; i++) {
+                    DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
+                    count = getNewUserList(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusDays(1).getMillis()).size();
+                    count1 = getNewUserList(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis()).size();
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
+                    if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
+                        break;
+                    }
+                    sd += DAY;
+                }
+            } else if (102 == type) {
+                for (int i = 0; ; i++) {
+                    DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
+                    count = getActiveUsersCount(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusDays(1).getMillis());
+                    count1 = getActiveUsersCount(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis());
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
+                    if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
+                        break;
+                    }
+                    sd += DAY;
+                }
+            }
+           /* if (count < 50) {
+                count = 50;
+            } else if (count > 9999) {
+                count = 9999;
+            }*/
+            if (103 == type) {
+                for (int i = 0; ; i++) {
+                    DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
+                    count = getRetentionRate(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusDays(1).getMillis());
+                    count1 = getRetentionRate(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
+                            dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis());
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
+                    if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
+                        break;
+                    }
+                    sd += DAY;
+                }
+            }
+            YearsVo yearsVo = new YearsVo();
+            yearsVo.setLastYear(objects.toArray());
+            yearsVo.setThisYear(objects2.toArray());
+            return yearsVo;
+        }
+        return null;
+    }
+
 
     /**
      * 获取留存率
@@ -142,7 +224,7 @@ public class DashboardService {
         List<User> newUserList = getNewUserList(sd, ed);
         List<Object> id = CollUtil.getFieldValues(newUserList, "id");
         if (ObjectUtil.isEmpty(id)) {
-           return 0;
+            return 0;
         }
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
         wrapper.in("user_id", id);
@@ -160,6 +242,7 @@ public class DashboardService {
 
     /**
      * 正留存率
+     *
      * @param t
      * @param y
      * @return
@@ -312,7 +395,7 @@ public class DashboardService {
             return 0;
         }
 
-      return rate(userLogInfos.size(),ids.size());
+        return rate(userLogInfos.size(), ids.size());
     }
 
 
@@ -396,7 +479,7 @@ public class DashboardService {
      * @return
      */
     private Integer activeUsersRate(Integer day) {
-        return rate(activeUsers(day), activeUsers(day + DAY));
+        return rate(activeUsers(day), activeUsers(day + ONE));
     }
 
     /**
@@ -442,26 +525,6 @@ public class DashboardService {
         return yearsVo;
     }
 
-    /**
-     * 失效
-     * 范围新增用户 101
-     *
-     * @param sd 开始时间戳
-     * @param ed 结束时间戳
-     * @return
-     */
-    private YearsVo NewUsers(Long sd, Long ed) {
-        Integer count = getNewUserList(sd, ed).size();
-       /* if (count < 50) {
-            count = 50;
-        } else if (count > 9999) {
-            count = 9999;
-        }*/
-        YearsVo yearsVo = new YearsVo();
-        yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
-        yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
-        return yearsVo;
-    }
 
     /**
      * 范围新增用户
@@ -473,7 +536,7 @@ public class DashboardService {
     private List<User> getNewUserList(Long sd, Long ed) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.ge("created", new Date(sd));
-        if (ed >= sd) {
+        if (ed > sd) {
             wrapper.lt("created", new Date(ed));
         }
         List<User> userList = this.userMapper.selectList(wrapper);
