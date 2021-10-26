@@ -37,7 +37,6 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("distribution")
-    @Authorization
     public ResponseEntity<Object> distribution(Long sd, Long ed) {
         VerifyCode code = VerifyThreadLocal.get();
         try {
@@ -62,12 +61,9 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("users")
-    @Authorization
     public ResponseEntity<Object> users(Long sd, Long ed, Integer type) {
         VerifyCode code = VerifyThreadLocal.get();
-        System.out.println(code);
         try {
-            //YearsVo yearsVo = dashboardService.users(sd, ed, type);
             YearsVo yearsVo = dashboardService.userss(sd, ed, type);
             if (ObjectUtil.isNull(yearsVo)) {
                 return null;
@@ -86,7 +82,6 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("summary")
-    @Authorization
     public ResponseEntity<DashboardStatVo> summary() {
         VerifyCode code = VerifyThreadLocal.get();
         try {

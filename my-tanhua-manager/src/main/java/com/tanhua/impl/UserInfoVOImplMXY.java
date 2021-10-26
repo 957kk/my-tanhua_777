@@ -11,6 +11,7 @@ import com.tanhua.common.mapper.UserInfoMapper;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.*;
+import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.dubbo.server.api.UserLikeApi;
 import com.tanhua.vo.UserInfoVOMXY;
 import lombok.extern.slf4j.Slf4j;
@@ -102,6 +103,7 @@ public class UserInfoVOImplMXY {
 
 
     public Map<String, String> userFreeze(UserFreezeMXY userFreezeMXY) {
+        VerifyCode code = VerifyThreadLocal.get();
         int result = -1;
         Map<String, String> flag = new HashMap<>();
         //查询用户冻结状态，如果没有则新增，如果有则修改
@@ -133,17 +135,17 @@ public class UserInfoVOImplMXY {
                             //设置冻结登录三天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(10));
-                            sendRocketMQ(FREEZETHELOGIN3, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGIN3);
+                            sendRocketMQ(FREEZETHELOGIN3, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGIN3);
                         } else if (userFreezeMXY.getFreezingRange() == 2) {
                             //设置冻结发言三天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(10));
-                            sendRocketMQ(FREEZESPEECH3, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECH3);
+                            sendRocketMQ(FREEZESPEECH3, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECH3);
                         } else {
                             //设置冻结发布动态三天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(10));
-                            sendRocketMQ(FREEZINGRELEASEDYNAMICS3, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICS3);
+                            sendRocketMQ(FREEZINGRELEASEDYNAMICS3, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICS3);
 
                         }
                     }
@@ -153,17 +155,17 @@ public class UserInfoVOImplMXY {
                             //设置冻结登录7天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(30));
-                            sendRocketMQ(FREEZETHELOGIN7, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGIN7);
+                            sendRocketMQ(FREEZETHELOGIN7, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGIN7);
                         } else if (userFreezeMXY.getFreezingRange() == 2) {
                             //设置冻结发言7天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(30));
-                            sendRocketMQ(FREEZESPEECH7, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECH7);
+                            sendRocketMQ(FREEZESPEECH7, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECH7);
                         } else {
                             //设置冻结发布动态7天
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(30));
-                            sendRocketMQ(FREEZINGRELEASEDYNAMICS7, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICS7);
+                            sendRocketMQ(FREEZINGRELEASEDYNAMICS7, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICS7);
                         }
                     }
                     break;
@@ -172,17 +174,17 @@ public class UserInfoVOImplMXY {
                             //设置冻结登录永久
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(100));
-                            sendRocketMQ(FREEZETHELOGINFOREVER, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGINFOREVER);
+                            sendRocketMQ(FREEZETHELOGINFOREVER, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZETHELOGINFOREVER);
                         } else if (userFreezeMXY.getFreezingRange() == 2) {
                             //设置冻结发言永久
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(100));
-                            sendRocketMQ(FREEZESPEECHFOREVER, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECHFOREVER);
+                            sendRocketMQ(FREEZESPEECHFOREVER, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZESPEECHFOREVER);
                         } else {
                             //设置冻结发布动态永久
                             redisTemplate.opsForValue().set(redisKey, userFreezeMXY.getFreezingRange() + "",
                                     Duration.ofSeconds(100));
-                            sendRocketMQ(FREEZINGRELEASEDYNAMICSFOREVER, "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICSFOREVER);
+                            sendRocketMQ(FREEZINGRELEASEDYNAMICSFOREVER, code.getUsername() + "对" + userFreezeMXY.getUserId() + "进行了" + FREEZINGRELEASEDYNAMICSFOREVER);
                         }
                     }
                     break;
@@ -206,11 +208,10 @@ public class UserInfoVOImplMXY {
      * @param a
      */
     private void sendRocketMQ(String o, String a) {
-        // VerifyCode code = VerifyThreadLocal.get();
+        VerifyCode code = VerifyThreadLocal.get();
         LogRetained_yt logR = new LogRetained_yt();
         logR.setTime(System.currentTimeMillis());
-        // logR.setUsername(code.getUsername());
-        logR.setUsername("admin");
+        logR.setUsername(code.getUsername());
         logR.setIp("192.168.200.10");
         logR.setO(o);
         logR.setA(a);
@@ -218,6 +219,7 @@ public class UserInfoVOImplMXY {
     }
 
     public Map<String, String> userUFreeze(Map<String, String> param) {
+        VerifyCode code = VerifyThreadLocal.get();
         Map<String, String> result = new HashMap<>();
         //查询redis中是否还有该用户的冻结状态
 
@@ -229,7 +231,7 @@ public class UserInfoVOImplMXY {
         query.eq("user_id", param.get("userId"));
         userFreezeMapperMXY.delete(query);
         result.put("message", "操作成功");
-        sendRocketMQ(FREEZINGRELEASEDYNAMICSFOREVER, "对" + param.get("userId") + "进行了" + "解冻");
+        sendRocketMQ(FREEZINGRELEASEDYNAMICSFOREVER, code.getUsername()+"对" + param.get("userId") + "进行了" + "解冻");
 
         return result;
     }

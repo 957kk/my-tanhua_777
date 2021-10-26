@@ -6,6 +6,7 @@ import cn.hutool.captcha.LineCaptcha;
 import cn.hutool.captcha.generator.RandomGenerator;
 import cn.hutool.core.util.StrUtil;
 import com.tanhua.common.pojo.VerifyCode;
+import com.tanhua.common.utils.NoAuthorization;
 import com.tanhua.service.Verification_yt_Service;
 import com.tanhua.vo.ErrorResult;
 import com.tanhua.vo.VerifyVo;
@@ -42,6 +43,7 @@ public class Verify_yt_Controller {
      * @return
      */
     @GetMapping("verification")
+    @NoAuthorization
     public ResponseEntity<Object> getCode(@RequestParam String uuid, HttpServletResponse response) {
         //  String uuid = params.get("uuid");
         // 随机生成 4 位验证码
@@ -79,6 +81,7 @@ public class Verify_yt_Controller {
 
 
     @PostMapping("login")
+    @NoAuthorization
     public Map<String, String> login(@RequestBody Map<String, String> params) {
 
         try {
@@ -106,6 +109,7 @@ public class Verify_yt_Controller {
      * @return
      */
     @PostMapping("profile")
+    @NoAuthorization
     public VerifyVo profile(@RequestHeader("Authorization") String token) {
         //token = Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImFkbWluIiwiZXhwIjoxNjM1MDM2NzQ5fQ.nVtEgW2bmGAoJT6U6EaPQYQhW3--JS6jqJMgaOWl3RA
 
@@ -117,6 +121,7 @@ public class Verify_yt_Controller {
 
 
     @PostMapping("logout")
+    @NoAuthorization
     public Boolean logout(@RequestHeader("Authorization") String token) {
         System.out.println(token);
         System.out.println("token = " + token);

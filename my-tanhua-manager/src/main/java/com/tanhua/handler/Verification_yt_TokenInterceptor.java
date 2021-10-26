@@ -2,7 +2,6 @@ package com.tanhua.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.tanhua.common.pojo.VerifyCode;
-import com.tanhua.common.utils.Authorization;
 import com.tanhua.common.utils.NoAuthorization;
 import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.service.Verification_yt_Service;
@@ -31,34 +30,22 @@ public class Verification_yt_TokenInterceptor implements HandlerInterceptor {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
- //判断是否包含@NoAuthorization注解，如果包含，直接放行
-        if (((HandlerMethod) handler).hasMethodAnnotation(Authorization.class)) {
-            //从请求头中获取token
-            String token = request.getHeader("Authorization");
-            if(StrUtil.isNotEmpty(token)){
-                VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token.substring(6));
-                if(verifyCode != null){
-                    //token有效
-                    //将User对象放入到ThreadLocal中
-                    System.out.println(verifyCode);
-                    VerifyThreadLocal.set(verifyCode);
-                    return true;
-                }
-            }
+        //判断是否包含@NoAuthorization注解，如果包含，直接放行
+        if (((HandlerMethod) handler).hasMethodAnnotation(NoAuthorization.class)) {
+            return true;
         }
 
-       /* //从请求头中获取token
+        //从请求头中获取token
         String token = request.getHeader("Authorization");
-        System.out.println(token.substring(6));
-        if(StrUtil.isNotEmpty(token)){
-            VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token);
-            if(verifyCode != null){
+        if (StrUtil.isNotEmpty(token)) {
+            VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token.substring(6));
+            if (verifyCode != null) {
                 //token有效
                 //将User对象放入到ThreadLocal中
-               VerifyThreadLocal.set(verifyCode);
+                VerifyThreadLocal.set(verifyCode);
                 return true;
             }
-        }*/
+        }
         //token无效，响应状态为401
         response.setStatus(401); //无权限
 
