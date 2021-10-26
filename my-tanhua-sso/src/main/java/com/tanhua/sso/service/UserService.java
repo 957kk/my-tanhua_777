@@ -106,6 +106,15 @@ public class UserService {
                 log.error("注册到环信平台失败！ " + user.getId());
             }
         }
+        //用户登录冻结状态
+        int state = 1;
+        //判断用户是否冻结登录状态
+
+        boolean freezen = UserFreezenState.isFreezen(user, state,userFreezeMapperMXY);
+        //如果是则登录失败
+        if(freezen){
+            return "用户当前处于冻结登录状态";
+        }
 
         //生成token
         Map<String, Object> claims = new HashMap<String, Object>();
