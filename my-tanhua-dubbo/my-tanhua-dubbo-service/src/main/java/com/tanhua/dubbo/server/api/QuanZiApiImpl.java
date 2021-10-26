@@ -127,15 +127,15 @@ public class QuanZiApiImpl implements QuanZiApi {
             quanZiStatusMXY.setManager("机审操作");
             switch (state){
                 case "pass":{
-                    quanZiStatusMXY.setStatus(2);
+                    quanZiStatusMXY.setStatus("3");
                 }
                 break;
                 case "review":{
-                    quanZiStatusMXY.setStatus(1);
+                    quanZiStatusMXY.setStatus("2");
                 }
                 break;
                 case "block":{
-                    quanZiStatusMXY.setStatus(3);
+                    quanZiStatusMXY.setStatus("4");
                 }
                 break;
                 default:{

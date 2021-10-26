@@ -14,7 +14,7 @@ public class QuanZiListVOMXY {
     private String userLogo;//用户头像
     private Long createDate;//创建时间
     private String text;//文本
-    private Integer state;//状态
+    private String state;//状态
     private Integer topState;//置顶状态
     private Integer reportCount;//举报数
     private Integer likeCount;//喜欢数

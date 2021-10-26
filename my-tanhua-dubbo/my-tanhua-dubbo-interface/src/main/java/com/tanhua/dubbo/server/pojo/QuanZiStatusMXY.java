@@ -19,6 +19,6 @@ public class QuanZiStatusMXY implements Serializable {
     private ObjectId id;
     private ObjectId publishId;
     private String manager;
-    private Integer status;
+    private String status;
     private Long created;
 }

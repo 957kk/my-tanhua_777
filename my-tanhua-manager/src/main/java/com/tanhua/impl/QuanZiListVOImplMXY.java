@@ -171,7 +171,7 @@ public class QuanZiListVOImplMXY {
             quanZiListVOMXY.setCreateDate(publish.getCreated());
             quanZiListVOMXY.setText(publish.getText());
             QuanZiStatusMXY quanZiStatusMXY = mongoTemplate.findOne(Query.query(Criteria.where("publishId").is(publish.getId())), QuanZiStatusMXY.class);
-            quanZiListVOMXY.setState(ObjectUtil.isEmpty(quanZiStatusMXY) ? 0 : quanZiStatusMXY.getStatus());
+            quanZiListVOMXY.setState(ObjectUtil.isEmpty(quanZiStatusMXY) ? "all" : quanZiStatusMXY.getStatus());
             quanZiListVOMXY.setReportCount(100);//举报数
             quanZiListVOMXY.setLikeCount(Convert.toInt(likeCount));
             quanZiListVOMXY.setCommentCount(Convert.toInt(commentCount));
@@ -356,7 +356,8 @@ public class QuanZiListVOImplMXY {
                     new Criteria().andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
         }
-        if (Convert.toInt(param.get("state")) == 0) {
+        //全部  all
+        if ("all".equals(param.get("state"))) {
             List<Publish> publishList = mongoTemplate.find(query, Publish.class);
             List<ObjectId> ids = CollUtil.getFieldValues(publishList, "id", ObjectId.class);
             List<QuanZiStatusMXY> quanZiStatusMXYList = getquanZiStatusMXYListByIds(ids);
@@ -391,7 +392,7 @@ public class QuanZiListVOImplMXY {
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
         }
-        if (!"0".equals(param.get("state"))) {
+        if (!"all".equals(param.get("state"))) {
             query.addCriteria(Criteria.where("status").is(param.get("state")));
         }
         List<QuanZiStatusMXY> quanZiStatusMXYList = mongoTemplate.find(query, QuanZiStatusMXY.class);
@@ -476,8 +477,8 @@ public class QuanZiListVOImplMXY {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if (quanZiStatusMXY.getStatus() != 2) {
-                quanZiStatusMXY.setStatus(2);
+            if (!"3".equals(quanZiStatusMXY.getStatus())) {
+                quanZiStatusMXY.setStatus("3");
                 mongoTemplate.save(quanZiStatusMXY);
             }
         }
@@ -494,8 +495,8 @@ public class QuanZiListVOImplMXY {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if (quanZiStatusMXY.getStatus() != 3) {
-                quanZiStatusMXY.setStatus(3);
+            if (!"4".equals(quanZiStatusMXY.getStatus())) {
+                quanZiStatusMXY.setStatus("4");
                 mongoTemplate.save(quanZiStatusMXY);
             }
         }
@@ -512,8 +513,8 @@ public class QuanZiListVOImplMXY {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if (quanZiStatusMXY.getStatus() != 1) {
-                quanZiStatusMXY.setStatus(1);
+            if (!"2".equals(quanZiStatusMXY.getStatus())) {
+                quanZiStatusMXY.setStatus("2");
                 mongoTemplate.save(quanZiStatusMXY);
             }
         }
