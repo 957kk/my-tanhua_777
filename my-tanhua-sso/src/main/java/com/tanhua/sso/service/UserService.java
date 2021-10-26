@@ -3,10 +3,14 @@ package com.tanhua.sso.service;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tanhua.common.mapper.UserFreezeMapperMXY;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.User;
+import com.tanhua.common.pojo.UserFreezeMXY;
 import com.tanhua.common.pojo.UserLogInfo;
+import com.tanhua.common.pojo.UserlogIn_yt;
+import com.tanhua.common.utils.UserFreezenState;
 import com.tanhua.dubbo.server.api.HuanXinApi;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -50,6 +54,10 @@ public class UserService {
     @Autowired
     private UserLogInfoMapper_zxk userLogInfoMapper_zxk;
 
+    @Autowired
+    private UserFreezeMapperMXY userFreezeMapperMXY;
+
+    private static final String USER_FREEZE_PREFX = "USER_FREEZE_";
 
     /**
      * 用户登录
@@ -92,6 +100,15 @@ public class UserService {
             if (!register) {
                 log.error("注册到环信平台失败！ " + user.getId());
             }
+        }
+        //用户登录冻结状态
+        int state = 1;
+        //判断用户是否冻结登录状态
+
+        boolean freezen = UserFreezenState.isFreezen(user, state,userFreezeMapperMXY);
+        //如果是则登录失败
+        if(freezen){
+            return "用户当前处于冻结登录状态";
         }
 
         //生成token

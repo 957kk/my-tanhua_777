@@ -29,6 +29,7 @@ public class SmsService {
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
 
+
     /**
      * 发送短信验证码
      *
@@ -72,6 +73,8 @@ public class SmsService {
      * @return
      */
     public ErrorResult sendCheckCode(String phone) {
+
+
 
         String redisKey = "CHECK_CODE_" + phone;
 

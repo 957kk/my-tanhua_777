@@ -19,4 +19,5 @@ public class UserFreezeMXY implements Serializable {
     private Integer freezingRange;//冻结范围
     private String reasonsForFreezing;//冻结原因
     private String frozenRemarks;//冻结备注
+    private Long created;
 }

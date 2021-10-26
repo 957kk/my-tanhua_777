@@ -6,10 +6,12 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.tanhua.common.mapper.UserFreezeMapperMXY;
 import com.tanhua.common.pojo.User;
 import com.tanhua.common.pojo.UserInfo;
 import com.tanhua.common.service.PicUploadService;
 import com.tanhua.common.utils.RelativeDateFormat;
+import com.tanhua.common.utils.UserFreezenState;
 import com.tanhua.common.utils.UserThreadLocal;
 import com.tanhua.common.vo.PicUploadResult;
 import com.tanhua.dubbo.server.api.QuanZiApi;
@@ -46,6 +48,9 @@ public class QuanZiService {
 
     @Autowired
     private PicUploadService picUploadService;
+
+    @Autowired
+    private UserFreezeMapperMXY userFreezeMapperMXY;
 
     public PageResult queryPublishList(Integer page, Integer pageSize) {
         //分析：通过dubbo中的服务查询用户的好友动态
@@ -143,6 +148,16 @@ public class QuanZiService {
                               MultipartFile[] multipartFile) {
         //查询当前的登录信息
         User user = UserThreadLocal.get();
+
+        //用户发布动态冻结状态
+        int state = 3;
+        //判断用户是否处于发言冻结状态
+
+        boolean freezen = UserFreezenState.isFreezen(user, state,userFreezeMapperMXY);
+        //如果是则评论失败
+        if(freezen){
+            return "用户当前的发布动态功能冻结中";
+        }
 
         Publish publish = new Publish();
         publish.setUserId(user.getId());
@@ -313,6 +328,16 @@ public class QuanZiService {
      */
     public Boolean saveComments(String publishId, String content) {
         User user = UserThreadLocal.get();
+
+        //用户发言冻结状态
+        int state = 2;
+        //判断用户是否处于发言冻结状态
+        boolean freezen = UserFreezenState.isFreezen(user, state,userFreezeMapperMXY);
+        //如果是则评论失败
+        if(freezen){
+            return false;
+        }
+
         return this.quanZiApi.saveComment(user.getId(), publishId, content);
     }
 
