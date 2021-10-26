@@ -268,16 +268,16 @@ public class UserListInfoControllerMXY {
      */
     @GetMapping("/messages")
 
-    public ResponseEntity<PageResultMXY> quanZiListCheck(String uid,String id,String pagesize,String page,String sd,String ed,String state,String sortProp, String sortOrder){
+    public PageResultMXY quanZiListCheck(String uid,String id,String pagesize,String page,String sd,String ed,String state,String sortProp, String sortOrder){
         try {
             PageResultMXY pageResultMXY = quanZiListServiceMXY.quanZiListCheck(uid,id,pagesize,page,sd,ed,state,sortProp,sortOrder);
             if (ObjectUtil.isNotEmpty(pageResultMXY)) {
-                return ResponseEntity.ok(pageResultMXY);
+                return pageResultMXY;
             }
         } catch (Exception e) {
             log.error("查询圈子状态记录出错 state = " + state , e);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return null;
     }
 
     /**

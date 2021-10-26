@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TotalsVOMXY {
     private String title;
-    private Integer code;
+    private String code;
     private Long values;
 }
