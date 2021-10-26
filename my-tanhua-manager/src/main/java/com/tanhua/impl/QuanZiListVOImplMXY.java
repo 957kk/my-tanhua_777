@@ -345,7 +345,7 @@ public class QuanZiListVOImplMXY {
             query.addCriteria(
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
-        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed")))){
+        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed")))&&Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0 ){
             DateTime dateTime2 = new DateTime(Convert.toLong(param.get("sd")), DateTimeZone.forID("+08:00"));
             long now = dateTime2.withMillisOfDay(0).plusDays(0).getMillis();
             long after = dateTime2.withMillisOfDay(0).plusDays(1).getMillis();
@@ -353,7 +353,7 @@ public class QuanZiListVOImplMXY {
                     new Criteria("").andOperator(Criteria.where("created").lt(after),
                             Criteria.where("created").gte(now)));
         }
-        if ("descending".equals(param.get("sortOrder"))) {
+        if ("descending".equals(param.get("sortOrder"))&&Convert.toLong(param.get("sd")) > 0 ) {
             query.with(Sort.by(Sort.Order.desc("created")));
         } else {
             query.with(Sort.by(Sort.Order.asc("created")));
@@ -390,7 +390,7 @@ public class QuanZiListVOImplMXY {
             query.addCriteria(
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
-        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed"))) ){
+        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed")))&&Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0 ){
             DateTime dateTime2 = new DateTime(Convert.toLong(param.get("sd")), DateTimeZone.forID("+08:00"));
             long now = dateTime2.withMillisOfDay(0).plusDays(0).getMillis();
             long after = dateTime2.withMillisOfDay(0).plusDays(1).getMillis();

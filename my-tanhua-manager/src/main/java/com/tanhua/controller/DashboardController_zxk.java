@@ -63,6 +63,7 @@ public class DashboardController_zxk {
     @GetMapping("users")
     public ResponseEntity<Object> users(Long sd, Long ed, Integer type) {
         VerifyCode code = VerifyThreadLocal.get();
+        System.out.println(code);
         try {
             YearsVo yearsVo = dashboardService.userss(sd, ed, type);
             if (ObjectUtil.isNull(yearsVo)) {

@@ -11,6 +11,7 @@ import com.tanhua.common.mapper.UserInfoMapper;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.*;
+import com.tanhua.common.utils.UserFreezenState;
 import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.dubbo.server.api.UserLikeApi;
 import com.tanhua.vo.UserInfoVOMXY;
