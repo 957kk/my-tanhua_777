@@ -19,6 +19,7 @@ import com.tanhua.pojo.T_A;
 import com.tanhua.pojo.YearsVo;
 import com.tanhua.utils.FromCityToProvince;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,9 +60,9 @@ public class DashboardService {
         dashboardStatVo.setCumulativeUsers(integer);
         dashboardStatVo.setActivePassWeek(getActiveWeekOrMonth(WEEK));
         dashboardStatVo.setActivePassMonth(getActiveWeekOrMonth(MONTH));
-        dashboardStatVo.setNewUsersToday(newUsers(DAY));
+        dashboardStatVo.setNewUsersToday(newUsers(System.currentTimeMillis()).size());
         dashboardStatVo.setNewUsersTodayRate(newUsersTodayRate());
-        dashboardStatVo.setLoginTimesToday(DAY);
+        dashboardStatVo.setLoginTimesToday(loginTimes(System.currentTimeMillis()));
         dashboardStatVo.setLoginTimesTodayRate(loginTimesTodayRate());
         dashboardStatVo.setActiveUsersToday(activeUsers(DAY));
         dashboardStatVo.setActiveUsersTodayRate(activeUsersRate(DAY));
@@ -123,25 +124,26 @@ public class DashboardService {
     public Integer getRetentionRate(Long sd, Long ed) {
         DateTime dateTime = new DateTime();
         if (sd > ed) {
-            return null;
+            return 0;
         } else if (ObjectUtil.equal(sd, ed)) {
             sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
         }
+        DateTime dateTime1 = new DateTime(ed, DateTimeZone.forID("+08:00"));
         List<User> newUserList = getNewUserList(sd, ed);
         List<Object> id = CollUtil.getFieldValues(newUserList, "id");
         if (ObjectUtil.isEmpty(id)) {
-            id.add(0000000000);
+            id.add(0);
         }
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
-        wrapper.select("distinct user_id");
-        wrapper.ge("login_time", dateTime.withMillisOfDay(0).plusDays(0).getMillis());
-        wrapper.lt("login_time", dateTime.withMillisOfDay(0).plusDays(1).getMillis());
         wrapper.in("user_id", id);
+        wrapper.select("distinct user_id");
+        wrapper.ge("login_time", dateTime1.withMillisOfDay(0).plusDays(0).getMillis());
+        wrapper.lt("login_time", dateTime1.withMillisOfDay(0).plusDays(1).getMillis());
         List<UserLogInfo> userLogInfos = this.userLogInfoMapper_zxk.selectList(wrapper);
         Integer rate = this.rate(userLogInfos.size(), id.size());
-        if (rate < 0) {
+     /*   if (rate < 0) {
             rate = -rate;
-        }
+        }*/
         return rate;
     }
 
@@ -174,6 +176,7 @@ public class DashboardService {
     }
 
     /**
+     * 失效
      * 新增用户
      * 最大值: 500
      * 最小值: 0
@@ -199,13 +202,99 @@ public class DashboardService {
     }
 
     /**
+     * 新增用户主键id集合
+     *
+     * @param sd 时间戳
+     * @return
+     */
+    private List<Long> newUsers(Long sd) {
+        DateTime dateTime = new DateTime(sd, DateTimeZone.forID("+08:00"));
+        List<User> newUserList = getNewUserList(dateTime.withMillisOfDay(0).getMillis(),
+                dateTime.withMillisOfDay(0).plusDays(1).getMillis());
+        List<Long> ids = CollUtil.getFieldValues(newUserList, "id", Long.class);
+        return ids;
+    }
+
+    /**
+     * 查询注册人数
+     *
+     * @param ids
+     * @return
+     */
+    private List<UserInfo> newUserInfo(List<Long> ids) {
+        QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
+        wrapper.in("user_id", ids);
+        //todo sex...
+        if (ObjectUtil.isEmpty(ids)) {
+            return new ArrayList<UserInfo>();
+        }
+        return userInfoMapper.selectList(wrapper);
+    }
+
+
+    /**
+     * 查询注册人数
+     *
+     * @param sd
+     * @return
+     */
+    public List<UserInfo> newUserInfo(Long sd) {
+        return this.newUserInfo(this.newUsers(sd));
+    }
+
+    /**
+     * 净激活
+     *
+     * @param sd
+     * @return
+     */
+    public Integer newUserNoUserInfo(Long sd) {
+        List<Long> longs = this.newUsers(sd);
+        List<UserInfo> userInfos = this.newUserInfo(longs);
+        return longs.size() - userInfos.size();
+    }
+
+    /**
      * 今日新增用户涨跌率，单位百分数，正数为涨，负数为跌
      *
      * @return
      */
     private Integer newUsersTodayRate() {
-        return rate(newUsers(DAY), newUsers(DAY + DAY));
+        return rate(newUsers(System.currentTimeMillis()).size(),
+                newUsers(System.currentTimeMillis() - 3600 * 24 * 1000).size());
     }
+
+    /**
+     * 注册之后的登录率 留存率
+     *
+     * @param sd
+     * @param ids
+     * @return
+     */
+    public Integer getRetentionRate(Long sd, List<Long> ids) {
+        DateTime dateTime1 = new DateTime(sd, DateTimeZone.forID("+08:00"));
+        if (ObjectUtil.isEmpty(ids)) {
+            return 0;
+        }
+        QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
+        wrapper.select("distinct user_id");
+        wrapper.between("login_time",
+                dateTime1.withMillisOfDay(0).plusDays(0).getMillis(),
+                dateTime1.withMillisOfDay(0).plusDays(1).getMillis());
+        wrapper.in("user_id", ids);
+        List<UserLogInfo> userLogInfos = this.userLogInfoMapper_zxk.selectList(wrapper);
+        if (ObjectUtil.isEmpty(userLogInfos)) {
+            return 0;
+        }
+        int t=userLogInfos.size();
+        int y= ids.size();
+        double f = t  / (double) y;
+        BigDecimal b = new BigDecimal(f);
+        //保留两位小数
+        double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return (int) (f1 * 100);
+    }
+
 
     /**
      * 登录次数
@@ -230,12 +319,32 @@ public class DashboardService {
     }
 
     /**
+     * 登录次数
+     *
+     * @param sd 时间戳
+     * @return
+     */
+    public Integer loginTimes(Long sd) {
+        DateTime dateTime = new DateTime(sd, DateTimeZone.forID("+08:00"));
+        QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
+        wrapper.ge("login_time", dateTime.withMillisOfDay(0).plusDays(0).getMillis());
+        wrapper.lt("login_time", dateTime.withMillisOfDay(0).plusDays(1).getMillis());
+        List<UserLogInfo> userLogInfos = userLogInfoMapper_zxk.selectList(wrapper);
+        Integer count = this.userLogInfoMapper_zxk.selectCount(wrapper);
+      /*  if (count > 500) {
+            return 500;
+        }*/
+        return count;
+    }
+
+    /**
      * 今日登录次数涨跌率，单位百分数，正数为涨，负数为跌
      *
      * @return
      */
     private Integer loginTimesTodayRate() {
-        return rate(loginTimes(DAY), loginTimes(DAY + DAY));
+        return rate(loginTimes(System.currentTimeMillis()),
+                loginTimes(System.currentTimeMillis() - 3600 * 24 * 1000));
     }
 
     /**
@@ -274,24 +383,23 @@ public class DashboardService {
     /**
      * 求涨跌率，单位百分数，正数为涨，负数为跌
      *
-     * @param t 第一天数量
-     * @param y 前一天数量
+     * @param t 今天
+     * @param y 昨天
      * @return
      */
     private Integer rate(Integer t, Integer y) {
         if (t == 0) {
-            return y;
+            return -y * 100;
         } else if (y == 0) {
-            return -t;
+            return t * 100;
+        } else if (0 == t && y == 0) {
+            return 0;
         }
-        double f = t.doubleValue() / y.doubleValue();
+        double f = (t - y) / y.doubleValue();
         BigDecimal b = new BigDecimal(f);
         //保留两位小数
         double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        if (t > y) {
-            return (int) (f1 * 100);
-        }
-        return -(int) (f1 * 100);
+        return (int) (f1 * 100);
     }
 
     /**
@@ -360,12 +468,32 @@ public class DashboardService {
      * @param ed 结束时间
      * @return
      */
-    private Integer getActiveUsersCount(Long sd, Long ed) {
+    public Integer getActiveUsersCount(Long sd, Long ed) {
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id,count(*) as times");
+        wrapper.select("distinct user_id,count(*) as times");
         wrapper.ge("login_time", sd);
         wrapper.lt("login_time", ed);
-        wrapper.groupBy("user_id").having("count(*)>1");
+        wrapper.groupBy("user_id").having("count(*)>=1");
+        List<Map<String, Object>> userLogInfos = userLogInfoMapper_zxk.selectMaps(wrapper);
+        return userLogInfos.size();
+    }
+
+    /**
+     * 获取活跃用户 默认在范围时间内登录一次或以上即为活跃用户
+     *
+     * @param sd 开始时间
+     * @param ed 结束时间
+     * @return
+     */
+    public Integer getActiveUsersCount(Long sd, Long ed, Integer sex) {
+        QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
+        wrapper.select("distinct user_id,count(*) as times");
+        if (ObjectUtil.isNotNull(sex)) {
+            //  wrapper.eq("sex", sex);
+        }
+        wrapper.ge("login_time", sd);
+        wrapper.lt("login_time", ed);
+        wrapper.groupBy("user_id").having("count(*)>=1");
         List<Map<String, Object>> userLogInfos = userLogInfoMapper_zxk.selectMaps(wrapper);
         return userLogInfos.size();
     }
@@ -400,12 +528,8 @@ public class DashboardService {
         List<User> newUserList = this.getNewUserList(sd, ed);
         List<Object> ids = CollUtil.getFieldValues(newUserList, "id");
         if (ObjectUtil.isEmpty(ids)) {
-            ids.add(0000000000);
+            ids.add(0);
         }
-        // QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
-        //wrapper.in("user_id", ids);
-        //List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
-
         distributionVo.setIndustryDistribution(this.getIndustryDistribution(ids));
         distributionVo.setAgeDistribution(this.getAgeDistribution(ids));
         distributionVo.setGenderDistribution(this.getGenderDistribution(ids));
@@ -517,6 +641,7 @@ public class DashboardService {
         QueryWrapper<UserInfo> wrapper = new QueryWrapper<>();
         wrapper.in("user_id", ids);
         List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
+
         List<Integer> ages = CollUtil.getFieldValues(userInfos, "age", Integer.class);
         if (ObjectUtil.isEmpty(ages)) {
             ages.add(0);
@@ -565,7 +690,7 @@ public class DashboardService {
         wrapper.select("user_id,industry,count(*) as age");
         wrapper.groupBy("industry");
         wrapper.orderByDesc("age");
-        //  wrapper.last("limit 0,10");
+        wrapper.last("limit 0,10");
         List<UserInfo> userInfos = userInfoMapper.selectList(wrapper);
         ArrayList<T_A> t_a_list = new ArrayList<>();
         ArrayList<String> list = new ArrayList<>();
@@ -590,6 +715,5 @@ public class DashboardService {
         }
         return t_a_list.toArray();
     }
-
 }
 
