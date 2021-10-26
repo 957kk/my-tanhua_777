@@ -24,6 +24,8 @@ import com.tanhua.vo.QuanZiListVOMXY;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -339,10 +341,17 @@ public class QuanZiListVOImplMXY {
     public long getCount(Map<String, String> param) {
         List<Publish> publishList = null;
         Query query = new Query();
-        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
+        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0 && !param.get("sd").equals(param.get("ed"))) {
             query.addCriteria(
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
+        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed")))){
+            DateTime dateTime2 = new DateTime(Convert.toLong(param.get("sd")), DateTimeZone.forID("+08:00"));
+            long now = dateTime2.withMillisOfDay(0).plusDays(0).getMillis();
+            long after = dateTime2.withMillisOfDay(0).plusDays(1).getMillis();
+            query.addCriteria(
+                    new Criteria("").andOperator(Criteria.where("created").lt(after),
+                            Criteria.where("created").gte(now)));
         }
         if ("descending".equals(param.get("sortOrder"))) {
             query.with(Sort.by(Sort.Order.desc("created")));
@@ -377,10 +386,17 @@ public class QuanZiListVOImplMXY {
         PageRequest pageRequest = PageRequest.of(Convert.toInt(param.get("page")) - 1, Convert.toInt(param.get("pagesize")));
         List<QuanZiListVOMXY> quanZiListVOMXYList = null;
         Query query = new Query();
-        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
+        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0&& !param.get("sd").equals(param.get("ed"))) {
             query.addCriteria(
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
+        }else if (Convert.toLong(param.get("sd")).equals(Convert.toLong(param.get("ed"))) ){
+            DateTime dateTime2 = new DateTime(Convert.toLong(param.get("sd")), DateTimeZone.forID("+08:00"));
+            long now = dateTime2.withMillisOfDay(0).plusDays(0).getMillis();
+            long after = dateTime2.withMillisOfDay(0).plusDays(1).getMillis();
+            query.addCriteria(
+                    new Criteria("").andOperator(Criteria.where("created").lt(after),
+                            Criteria.where("created").gte(now)));
         }
         if ("descending".equals(param.get("sortOrder"))) {
             query.with(Sort.by(Sort.Order.desc("created")));
