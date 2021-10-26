@@ -2,6 +2,7 @@ package com.tanhua.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.tanhua.common.pojo.VerifyCode;
+import com.tanhua.common.utils.Authorization;
 import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.pojo.DistributionVo;
 import com.tanhua.pojo.YearsVo;
@@ -36,6 +37,7 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("distribution")
+    @Authorization
     public ResponseEntity<Object> distribution(Long sd, Long ed) {
         VerifyCode code = VerifyThreadLocal.get();
         try {
@@ -60,8 +62,10 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("users")
+    @Authorization
     public ResponseEntity<Object> users(Long sd, Long ed, Integer type) {
         VerifyCode code = VerifyThreadLocal.get();
+        System.out.println(code);
         try {
             //YearsVo yearsVo = dashboardService.users(sd, ed, type);
             YearsVo yearsVo = dashboardService.userss(sd, ed, type);
@@ -82,6 +86,7 @@ public class DashboardController_zxk {
      * @return
      */
     @GetMapping("summary")
+    @Authorization
     public ResponseEntity<DashboardStatVo> summary() {
         VerifyCode code = VerifyThreadLocal.get();
         try {

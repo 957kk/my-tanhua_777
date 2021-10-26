@@ -87,6 +87,7 @@ public class UserInfoVOImplMXY {
         QueryWrapper<UserLogInfo> query1 = new QueryWrapper<>();
         query1.eq("user_id", Convert.toLong(userId));
         query1.orderByDesc("login_time");
+        query1.last("limit 0,1");
         UserLogInfo userLogInfo = userLogInfoMapper_zxk.selectOne(query1);
         if (ObjectUtil.isNotNull(userLogInfo)) {
             userInfoVOMXY.setLastActiveTime(userLogInfo.getLoginTime());

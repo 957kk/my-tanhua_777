@@ -31,16 +31,16 @@ public class Verification_yt_TokenInterceptor implements HandlerInterceptor {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
-
-        //判断是否包含@NoAuthorization注解，如果包含，直接放行
+ //判断是否包含@NoAuthorization注解，如果包含，直接放行
         if (((HandlerMethod) handler).hasMethodAnnotation(Authorization.class)) {
             //从请求头中获取token
             String token = request.getHeader("Authorization");
             if(StrUtil.isNotEmpty(token)){
-                VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token);
+                VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token.substring(6));
                 if(verifyCode != null){
                     //token有效
                     //将User对象放入到ThreadLocal中
+                    System.out.println(verifyCode);
                     VerifyThreadLocal.set(verifyCode);
                     return true;
                 }
@@ -49,6 +49,7 @@ public class Verification_yt_TokenInterceptor implements HandlerInterceptor {
 
        /* //从请求头中获取token
         String token = request.getHeader("Authorization");
+        System.out.println(token.substring(6));
         if(StrUtil.isNotEmpty(token)){
             VerifyCode verifyCode = this.verification_yt_Service.queryUserByToken(token);
             if(verifyCode != null){

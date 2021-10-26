@@ -161,11 +161,13 @@ public class Verification_yt_Service {
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
-        VerifyCode verifyCode = new VerifyCode();
-        verifyCode.setUsername(body.get("id").toString());
-        String o = (String) redisTemplate.opsForValue().get(redisKey + verifyCode.getUsername());
+
+       // verifyCode.setUsername(body.get("id").toString());
+        String o = (String) redisTemplate.opsForValue().get(redisKey + body.get("id").toString());
         if (StringUtils.isNotEmpty(o)) {
-            return verifyCode;
+            QueryWrapper<VerifyCode> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("username", body.get("id"));
+            return fourUserMapper.selectOne(queryWrapper);
         }
         return null;
     }
