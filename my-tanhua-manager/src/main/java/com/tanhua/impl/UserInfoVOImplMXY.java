@@ -79,10 +79,29 @@ public class UserInfoVOImplMXY {
         QueryWrapper<UserFreezeMXY> wapper = new QueryWrapper<>();
         wapper.eq("user_id", userInfo.getUserId());
         UserFreezeMXY userFreezeMXY = userFreezeMapperMXY.selectOne(wapper);
-        if (ObjectUtil.isEmpty(userFreezeMXY)) {
+        if(ObjectUtil.isNotNull(userFreezeMXY)) {
+            //当前系统时间
+            long now = System.currentTimeMillis();
+            long freezeTime = 0;
+            //判断冻结时间
+            //冻结三天 60s
+            if (userFreezeMXY.getFreezingTime() == 1) {
+                freezeTime = userFreezeMXY.getCreated() + (60 * 1000);
+                //冻结七天 120s
+            } else if (userFreezeMXY.getFreezingTime() == 2) {
+                freezeTime = userFreezeMXY.getCreated() + (120 * 1000);
+                //永久冻结 比当前时间多一秒
+            } else {
+                freezeTime = System.currentTimeMillis() + 1000;
+            }
+            if(freezeTime>now){
+                userInfoVOMXY.setUserStatus(2 + "");
+            }else {
+                userFreezeMapperMXY.delete(wapper);
+                userInfoVOMXY.setUserStatus(1 + "");
+            }
+        }else {
             userInfoVOMXY.setUserStatus(1 + "");
-        } else {
-            userInfoVOMXY.setUserStatus(2 + "");
         }
         QueryWrapper<UserLogInfo> query1 = new QueryWrapper<>();
         query1.eq("user_id", Convert.toLong(userId));
