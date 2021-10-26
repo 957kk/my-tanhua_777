@@ -4,11 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
-import com.tanhua.common.mapper.UserLogInMapper_yt;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.User;
 import com.tanhua.common.pojo.UserLogInfo;
-import com.tanhua.common.pojo.UserlogIn_yt;
 import com.tanhua.dubbo.server.api.HuanXinApi;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,8 +22,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -48,7 +48,7 @@ public class UserService {
     private HuanXinApi huanXinApi;
 
     @Autowired
-    private UserLogInMapper_yt userLogInMapper_yt;
+    private UserLogInfoMapper_zxk userLogInfoMapper_zxk;
 
 
     /**
@@ -86,13 +86,6 @@ public class UserService {
             this.userMapper.insert(user);
             isNew = true;
 
-       /*     //将注册用户信息写到注册表
-            UserlogIn_yt userlogIn_yt = new UserlogIn_yt();
-            userlogIn_yt.setPhone(phone);
-            userlogIn_yt.setLog("注册成功");
-            userlogIn_yt.setTime(System.currentTimeMillis());
-
-            this.userLogInMapper_yt.insert(userlogIn_yt);*/
 
             //将该用户信息注册到环信平台
             Boolean register = this.huanXinApi.register(user.getId());
@@ -117,6 +110,27 @@ public class UserService {
             Map<String, Object> msg = new HashMap<>();
             msg.put("id", user.getId());
             msg.put("date", System.currentTimeMillis());
+
+            ArrayList<String> strings = new ArrayList<>();
+            strings.add("北京市");
+            strings.add("上海市");
+            strings.add("深圳市");
+            strings.add("广州市");
+            strings.add("浙江省杭州市");
+            strings.add("浙江省宁波市");
+            strings.add("河南省商丘市");
+            strings.add("江苏省苏州市");
+            strings.add("河北省邯郸市");
+            strings.add("山东省东营市");
+            strings.add("台湾省台北市");
+            Random random = new Random();
+            UserLogInfo info = new UserLogInfo();
+            info.setUserId(user.getId());
+            info.setLoginIp("192.168.0.01");
+            info.setLoginAddress(strings.get(random.nextInt(11)));
+            info.setLoginTime(System.currentTimeMillis());
+            info.setLoginDevice("手机");
+            this.userLogInfoMapper_zxk.insert(info);
 
             this.rocketMQTemplate.convertAndSend("tanhua-sso-login", msg);
         } catch (MessagingException e) {

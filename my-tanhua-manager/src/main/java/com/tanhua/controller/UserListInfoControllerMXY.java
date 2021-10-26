@@ -8,6 +8,7 @@ import com.tanhua.vo.PageResultMXY;
 import com.tanhua.vo.QuanZiListVOMXY;
 import com.tanhua.vo.UserInfoVOMXY;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,8 @@ public class UserListInfoControllerMXY {
     private VideosListServiceMXY videosListServiceMXY;
     @Autowired
     private UserLogsListServiceMXY userLogsListServiceMXY;
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     /**
      * 用户管理列表
