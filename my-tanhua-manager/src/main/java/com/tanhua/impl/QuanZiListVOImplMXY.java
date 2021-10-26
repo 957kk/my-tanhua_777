@@ -409,6 +409,7 @@ public class QuanZiListVOImplMXY {
      */
     private List<QuanZiListVOMXY> getFullquanZiListVOMXY(List<Publish> publishList, List<UserInfo> userInfoList, List<QuanZiStatusMXY> quanZiStatusMXYList) {
         List<QuanZiListVOMXY> quanZiListVOMXYList = new ArrayList<>();
+        int i = 0;
         for (Publish publish : publishList) {
             long likeCount = mongoTemplate.count(Query.query(Criteria.where("publishId").is(publish.getId()).and("commentType").is(1)), Comment.class);
             long commentCount = mongoTemplate.count(Query.query(Criteria.where("publishId").is(publish.getId()).and("commentType").is(2)), Comment.class);
@@ -437,6 +438,10 @@ public class QuanZiListVOImplMXY {
             quanZiListVOMXY.setForwardingCount(Convert.toInt(forwardingCount));
             quanZiListVOMXY.setMedias(publish.getMedias().toArray(new String[publish.getMedias().size()]));
             quanZiListVOMXYList.add(quanZiListVOMXY);
+            i++;
+            if(i==10){
+                break;
+            }
         }
         return quanZiListVOMXYList;
     }
