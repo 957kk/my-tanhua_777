@@ -86,7 +86,7 @@ public class UserInfoVOImplMXY {
             //判断冻结时间
             //冻结三天 60s
             if (userFreezeMXY.getFreezingTime() == 1) {
-                freezeTime = userFreezeMXY.getCreated() + (60 * 1000);
+                freezeTime = userFreezeMXY.getCreated() + (10 * 1000);
                 //冻结七天 120s
             } else if (userFreezeMXY.getFreezingTime() == 2) {
                 freezeTime = userFreezeMXY.getCreated() + (120 * 1000);
