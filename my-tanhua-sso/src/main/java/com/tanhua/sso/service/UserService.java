@@ -5,7 +5,6 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tanhua.common.mapper.UserFreezeMapperMXY;
 import com.tanhua.common.mapper.UserLogInfoMapper_zxk;
-import com.tanhua.common.mapper.UserLogInMapper_yt;
 import com.tanhua.common.mapper.UserMapper;
 import com.tanhua.common.pojo.User;
 import com.tanhua.common.pojo.UserFreezeMXY;
@@ -51,7 +50,7 @@ public class UserService {
     private HuanXinApi huanXinApi;
 
     @Autowired
-    private UserLogInMapper_yt userLogInMapper_yt;
+    private UserLogInfoMapper_zxk userLogInfoMapper_zxk;
 
     @Autowired
     private UserFreezeMapperMXY userFreezeMapperMXY;
@@ -107,15 +106,6 @@ public class UserService {
                 log.error("注册到环信平台失败！ " + user.getId());
             }
         }
-        //冻结登录的状态
-        int state = 1;
-        if(!isNew){
-            //判断用户是否处于冻结登录状态
-            boolean freezen = UserFreezenState.isFreezen(user, state,userFreezeMapperMXY);
-            if(freezen){
-                return "用户当前处于冻结登录状态";
-            }
-        }
 
         //生成token
         Map<String, Object> claims = new HashMap<String, Object>();
@@ -141,8 +131,6 @@ public class UserService {
 
         return token + "|" + isNew;
     }
-
-
 
     public User queryUserByToken(String token) {
         try {

@@ -410,7 +410,7 @@ public class QuanZiListVOImplMXY {
      */
     private List<UserInfo> getUserInfoListByIds(List<Long> userId) {
         QueryWrapper<UserInfo> query = new QueryWrapper<>();
-        if (userId.size() == 1) {
+        if (ObjectUtil.isNotNull(userId)) {
             query.like("user_id", userId.get(0));
         }
         List<UserInfo> userInfoList = userInfoMapper.selectList(query);
