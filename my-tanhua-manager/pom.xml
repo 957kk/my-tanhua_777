@@ -106,12 +106,7 @@
             <artifactId>rocketmq-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- 阿里云第三方动态审核依赖-->
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>aliyun-java-sdk-green</artifactId>
-            <version>3.6.5</version>
-        </dependency>
+
 
 
         <dependency>

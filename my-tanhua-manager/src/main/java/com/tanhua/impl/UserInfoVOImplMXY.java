@@ -93,12 +93,14 @@ public class UserInfoVOImplMXY {
         query.eq("user_id",userFreezeMXY.getUserId());
         UserFreezeMXY freezeMXY = userFreezeMapperMXY.selectOne(query);
         if(ObjectUtil.isEmpty(freezeMXY)){
+            userFreezeMXY.setCreated(System.currentTimeMillis());
             result = userFreezeMapperMXY.insert(userFreezeMXY);
         }else {
             freezeMXY.setFreezingTime(userFreezeMXY.getFreezingTime());
             freezeMXY.setFreezingRange(userFreezeMXY.getFreezingRange());
             freezeMXY.setFrozenRemarks(userFreezeMXY.getFrozenRemarks());
             freezeMXY.setReasonsForFreezing(userFreezeMXY.getReasonsForFreezing());
+            freezeMXY.setCreated(System.currentTimeMillis());
             result = userFreezeMapperMXY.updateById(freezeMXY);
         }
         if(result!=1){

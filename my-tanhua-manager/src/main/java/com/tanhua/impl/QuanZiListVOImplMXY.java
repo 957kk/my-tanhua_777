@@ -12,7 +12,7 @@ import com.tanhua.common.pojo.UserInfo;
 import com.tanhua.dubbo.server.api.QuanZiApi;
 import com.tanhua.dubbo.server.pojo.Comment;
 import com.tanhua.dubbo.server.pojo.Publish;
-import com.tanhua.pojo.QuanZiStatusMXY;
+import com.tanhua.dubbo.server.pojo.QuanZiStatusMXY;
 import com.tanhua.pojo.QuanZiTopMXY;
 import com.tanhua.vo.CommentVOListMXY;
 import com.tanhua.vo.PageResultMXY;

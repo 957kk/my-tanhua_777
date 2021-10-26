@@ -11,6 +11,7 @@ import com.tanhua.dubbo.server.enums.IdType;
 import com.tanhua.dubbo.server.pojo.*;
 import com.tanhua.dubbo.server.service.IdService;
 import com.tanhua.dubbo.server.service.TimeLineService;
+import com.tanhua.dubbo.server.utils.AliYunTextCheckUtil;
 import com.tanhua.dubbo.server.vo.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -118,6 +119,31 @@ public class QuanZiApiImpl implements QuanZiApi {
 
             //写入好友的时间线表（异步写入）
             this.timeLineService.saveTimeLine(publish.getUserId(), publish.getId());
+
+            String state = AliYunTextCheckUtil.getState(publish.getText());
+            QuanZiStatusMXY quanZiStatusMXY = new QuanZiStatusMXY();
+            quanZiStatusMXY.setPublishId(publish.getId());
+            quanZiStatusMXY.setCreated(System.currentTimeMillis());
+            quanZiStatusMXY.setManager("机审操作");
+            switch (state){
+                case "pass":{
+                    quanZiStatusMXY.setStatus(2);
+                }
+                break;
+                case "review":{
+                    quanZiStatusMXY.setStatus(1);
+                }
+                break;
+                case "block":{
+                    quanZiStatusMXY.setStatus(3);
+                }
+                break;
+                default:{
+                    log.error("文本审核出错，请检查第三方SDK publishId = " + publish.getId());
+                }
+                break;
+            }
+            mongoTemplate.save(quanZiStatusMXY);
         } catch (Exception e) {
             //TODO 需要做事务的回滚，Mongodb的单节点服务，不支持事务，对于回滚我们暂时不实现了
             log.error("发布动态失败~ publish = " + publish, e);
