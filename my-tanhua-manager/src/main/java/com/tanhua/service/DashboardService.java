@@ -86,17 +86,25 @@ public class DashboardService {
      */
     public YearsVo users(Long sd, Long ed, Integer type) {
         if (ObjectUtil.isAllNotEmpty(sd, ed, type)) {
-            DateTime dateTime = new DateTime();
+            DateTime dateTime = new DateTime(sd,DateTimeZone.forID("+08:00"));
+            DateTime dateTime1 = new DateTime(ed, DateTimeZone.forID("+08:00"));
             if (sd > ed) {
                 return null;
             } else if (ObjectUtil.equal(sd, ed)) {
                 sd = dateTime.withMillisOfDay(0).plusDays(0).getMillis();
             }
             Integer count = 0;
+            Integer count1=0;
             if (101 == type) {
                 count = getNewUserList(sd, ed).size();
+                count1 = getNewUserList(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
+                        dateTime1.withMillisOfDay(0).plusYears(-1).getMillis()).size();
+
+
             } else if (102 == type) {
                 count = getActiveUsersCount(sd, ed);
+                count1 = getActiveUsersCount(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
+                        dateTime1.withMillisOfDay(0).plusYears(-1).getMillis());
             }
            /* if (count < 50) {
                 count = 50;
@@ -105,9 +113,11 @@ public class DashboardService {
             }*/
             if (103 == type) {
                 count = getRetentionRate(sd, ed);
+                count1=getRetentionRate(dateTime.withMillisOfDay(0).plusYears(-1).getMillis(),
+                        dateTime1.withMillisOfDay(0).plusYears(-1).getMillis());
             }
             YearsVo yearsVo = new YearsVo();
-            yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
+            yearsVo.setLastYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count1).build()});
             yearsVo.setThisYear(new Object[]{T_A.builder().title(MonthEnum.OCTOBER.getMonth()).amount(count).build()});
             return yearsVo;
         }
@@ -132,7 +142,7 @@ public class DashboardService {
         List<User> newUserList = getNewUserList(sd, ed);
         List<Object> id = CollUtil.getFieldValues(newUserList, "id");
         if (ObjectUtil.isEmpty(id)) {
-            id.add(0);
+           return 0;
         }
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
         wrapper.in("user_id", id);
@@ -140,11 +150,26 @@ public class DashboardService {
         wrapper.ge("login_time", dateTime1.withMillisOfDay(0).plusDays(0).getMillis());
         wrapper.lt("login_time", dateTime1.withMillisOfDay(0).plusDays(1).getMillis());
         List<UserLogInfo> userLogInfos = this.userLogInfoMapper_zxk.selectList(wrapper);
-        Integer rate = this.rate(userLogInfos.size(), id.size());
+        return rate(userLogInfos.size(), id.size());
+
      /*   if (rate < 0) {
             rate = -rate;
-        }*/
-        return rate;
+        }*//*
+        return rate;*/
+    }
+
+    /**
+     * 正留存率
+     * @param t
+     * @param y
+     * @return
+     */
+    private Integer rate(int t, double y) {
+        double f = t / y;
+        BigDecimal b = new BigDecimal(f);
+        //保留两位小数
+        double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return (int) (f1 * 100);
     }
 
     /**
@@ -286,13 +311,8 @@ public class DashboardService {
         if (ObjectUtil.isEmpty(userLogInfos)) {
             return 0;
         }
-        int t=userLogInfos.size();
-        int y= ids.size();
-        double f = t  / (double) y;
-        BigDecimal b = new BigDecimal(f);
-        //保留两位小数
-        double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-        return (int) (f1 * 100);
+
+      return rate(userLogInfos.size(),ids.size());
     }
 
 
@@ -329,7 +349,6 @@ public class DashboardService {
         QueryWrapper<UserLogInfo> wrapper = new QueryWrapper<>();
         wrapper.ge("login_time", dateTime.withMillisOfDay(0).plusDays(0).getMillis());
         wrapper.lt("login_time", dateTime.withMillisOfDay(0).plusDays(1).getMillis());
-        List<UserLogInfo> userLogInfos = userLogInfoMapper_zxk.selectList(wrapper);
         Integer count = this.userLogInfoMapper_zxk.selectCount(wrapper);
       /*  if (count > 500) {
             return 500;
@@ -643,38 +662,38 @@ public class DashboardService {
         List<UserInfo> userInfos = this.userInfoMapper.selectList(wrapper);
 
         List<Integer> ages = CollUtil.getFieldValues(userInfos, "age", Integer.class);
-        if (ObjectUtil.isEmpty(ages)) {
-            ages.add(0);
-        }
         int one = 0;
         int two = 0;
         int three = 0;
         int four = 0;
         int five = 0;
         int six = 0;
-        for (Integer age : ages) {
-            // 0-17岁,18-23岁,24-30岁,31-40岁,41-50岁,50岁+
-            if (age <= 17) {
-                one++;
-            } else if (age <= 23) {
-                two++;
-            } else if (age <= 30) {
-                three++;
-            } else if (age <= 40) {
-                four++;
-            } else if (age <= 50) {
-                five++;
-            } else {
-                six++;
+        if (ObjectUtil.isNotEmpty(ages)) {
+            for (Integer age : ages) {
+                // 0-17岁,18-23岁,24-30岁,31-40岁,41-50岁,50岁+
+                if (age <= 17) {
+                    one++;
+                } else if (age <= 23) {
+                    two++;
+                } else if (age <= 30) {
+                    three++;
+                } else if (age <= 40) {
+                    four++;
+                } else if (age <= 50) {
+                    five++;
+                } else {
+                    six++;
+                }
             }
+            //todo amount, 最大值: 9999 最小值: 50
+            objects[0] = T_A.builder().title(DistributionEnum.ONE.getDesc()).amount(one).build();
+            objects[1] = T_A.builder().title(DistributionEnum.TWO.getDesc()).amount(two).build();
+            objects[2] = T_A.builder().title(DistributionEnum.THREE.getDesc()).amount(three).build();
+            objects[3] = T_A.builder().title(DistributionEnum.FOUR.getDesc()).amount(four).build();
+            objects[4] = T_A.builder().title(DistributionEnum.FIVE.getDesc()).amount(five).build();
+            objects[5] = T_A.builder().title(DistributionEnum.SIX.getDesc()).amount(six).build();
         }
-        //todo amount, 最大值: 9999 最小值: 50
-        objects[0] = T_A.builder().title(DistributionEnum.ONE.getDesc()).amount(one).build();
-        objects[1] = T_A.builder().title(DistributionEnum.TWO.getDesc()).amount(two).build();
-        objects[2] = T_A.builder().title(DistributionEnum.THREE.getDesc()).amount(three).build();
-        objects[3] = T_A.builder().title(DistributionEnum.FOUR.getDesc()).amount(four).build();
-        objects[4] = T_A.builder().title(DistributionEnum.FIVE.getDesc()).amount(five).build();
-        objects[5] = T_A.builder().title(DistributionEnum.SIX.getDesc()).amount(six).build();
+
         return objects;
     }
 

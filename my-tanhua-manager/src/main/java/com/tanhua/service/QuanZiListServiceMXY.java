@@ -23,6 +23,7 @@ public class QuanZiListServiceMXY {
     @Autowired
     private QuanZiListVOImplMXY quanZiListVOImplMXY;
 
+
     public PageResultMXY queryQuanZiList(String uid, String page, String pagesize, String sortProp, String sortOrder){
         if(StrUtil.isAllEmpty(uid,page,pagesize,sortProp,sortOrder)){
             log.error("查询参数存在null值 uid =" +uid + "---" +"page = " +page +"---"+"pagesize = " +pagesize +"---"+"sortProp = " +sortProp +"---"+"sortOrder = " +sortOrder);
@@ -87,6 +88,7 @@ public class QuanZiListServiceMXY {
         }
 
         Map<String,String> result = quanZiListVOImplMXY.setQuanZiTop(new ObjectId(id));
+
 
 
         return result;

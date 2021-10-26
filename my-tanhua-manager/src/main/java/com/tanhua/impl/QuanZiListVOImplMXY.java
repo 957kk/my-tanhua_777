@@ -7,8 +7,12 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mongodb.client.result.DeleteResult;
+import com.tanhua.common.mapper.FourUserMapper;
 import com.tanhua.common.mapper.UserInfoMapper;
+import com.tanhua.common.pojo.LogRetained_yt;
 import com.tanhua.common.pojo.UserInfo;
+import com.tanhua.common.pojo.VerifyCode;
+import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.dubbo.server.api.QuanZiApi;
 import com.tanhua.dubbo.server.pojo.Comment;
 import com.tanhua.dubbo.server.pojo.Publish;
@@ -18,6 +22,7 @@ import com.tanhua.vo.CommentVOListMXY;
 import com.tanhua.vo.PageResultMXY;
 import com.tanhua.vo.QuanZiListVOMXY;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +31,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 
 
@@ -40,6 +46,12 @@ public class QuanZiListVOImplMXY {
     @Reference(version = "1.0.0")
     private QuanZiApi quanZiApi;
 
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
+    @Autowired
+    private FourUserMapper fourUserMapper;
+    private static final String QUANZITOP = "圈子置顶";
+    private static final String QUANZIUNTOP = "取消圈子置顶";
 
     /**
      * 获取用户动态列表
@@ -159,7 +171,7 @@ public class QuanZiListVOImplMXY {
             quanZiListVOMXY.setCreateDate(publish.getCreated());
             quanZiListVOMXY.setText(publish.getText());
             QuanZiStatusMXY quanZiStatusMXY = mongoTemplate.findOne(Query.query(Criteria.where("publishId").is(publish.getId())), QuanZiStatusMXY.class);
-            quanZiListVOMXY.setState(ObjectUtil.isEmpty(quanZiStatusMXY)?0:quanZiStatusMXY.getStatus());
+            quanZiListVOMXY.setState(ObjectUtil.isEmpty(quanZiStatusMXY) ? 0 : quanZiStatusMXY.getStatus());
             quanZiListVOMXY.setReportCount(100);//举报数
             quanZiListVOMXY.setLikeCount(Convert.toInt(likeCount));
             quanZiListVOMXY.setCommentCount(Convert.toInt(commentCount));
@@ -242,6 +254,7 @@ public class QuanZiListVOImplMXY {
     }
 
     public Map<String, String> setQuanZiTop(ObjectId publishId) {
+        //  VerifyCode code = VerifyThreadLocal.get();
         Map<String, String> result = new HashMap<>();
         Query query = Query.query(Criteria.where("id").is(publishId));
         Publish publish = mongoTemplate.findOne(query, Publish.class);
@@ -256,17 +269,48 @@ public class QuanZiListVOImplMXY {
         QuanZiTopMXY topMXY = mongoTemplate.save(quanZiTopMXY);
         if (ObjectUtil.isNotEmpty(topMXY)) {
             result.put("message", "操作成功");
+
+            String o = QUANZITOP;
+            //String a = code.getUsername() + "将用户为" + publish.getUserId() + "的圈子" + publishId + "进行了置顶操作";
+            String a = "admin将用户为" + publish.getUserId() + "的圈子" + publishId + "进行了置顶操作";
+            sendRocketMQ(o, a);
+
             return result;
         }
         result.put("message", "操作失败");
         return result;
     }
 
+    /**
+     * 发送rocketmq信息操作内容
+     *
+     * @param o
+     * @param a
+     */
+    private void sendRocketMQ(String o, String a) {
+      /*  Query query = Query.query(Criteria.where("id").is(publishId));
+        Publish publish = mongoTemplate.findOne(query, Publish.class);*/
+        // VerifyCode code = VerifyThreadLocal.get();
+        LogRetained_yt logR = new LogRetained_yt();
+        logR.setTime(System.currentTimeMillis());
+        // logR.setUsername(code.getUsername());
+        logR.setUsername("admin");
+        logR.setIp("192.168.200.10");
+        logR.setO(o);
+        logR.setA(a);
+        this.rocketMQTemplate.convertAndSend("tanhua", logR);
+    }
+
     public Map<String, String> setQuanZiUntop(ObjectId objectId) {
+        //  VerifyCode code = VerifyThreadLocal.get();
         Map<String, String> result = new HashMap<>();
         boolean flag = mongoTemplate.exists(Query.query(Criteria.where("publishId").is(objectId)), QuanZiTopMXY.class);
         if (!flag) {
             result.put("message", "操作成功");
+            String o = QUANZIUNTOP;
+            //String a = code.getUsername() + "将圈子为" + objectId + "进行了取消置顶操作";
+            String a = "admin将圈子为" + objectId + "进行了取消置顶操作";
+            sendRocketMQ(o, a);
             return result;
         }
         DeleteResult deleteResult = mongoTemplate.remove(Query.query(Criteria.where("publishId").is(objectId)), QuanZiTopMXY.class);
@@ -275,6 +319,11 @@ public class QuanZiListVOImplMXY {
             return result;
         }
         result.put("message", "操作成功");
+
+        String o = QUANZIUNTOP;
+        //String a = code.getUsername() + "将圈子为" + objectId + "进行了取消置顶操作";
+        String a = "admin将圈子为" + objectId + "进行了取消置顶操作";
+        sendRocketMQ(o, a);
         return result;
     }
 
@@ -302,7 +351,7 @@ public class QuanZiListVOImplMXY {
         } else {
             userInfoList = getUserInfoListByIds(null);
         }
-        if (Convert.toLong(param.get("sd"))>0 && Convert.toLong(param.get("ed"))>0) {
+        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
             query.addCriteria(
                     new Criteria().andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
@@ -337,7 +386,7 @@ public class QuanZiListVOImplMXY {
      */
     private List<QuanZiStatusMXY> getquanZiStatusMXYListByState(Map<String, String> param) {
         Query query = Query.query(new Criteria());
-        if (Convert.toLong(param.get("sd"))>0 && Convert.toLong(param.get("ed"))>0) {
+        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
             query.addCriteria(
                     new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
@@ -366,7 +415,7 @@ public class QuanZiListVOImplMXY {
             QuanZiListVOMXY quanZiListVOMXY = new QuanZiListVOMXY();
             quanZiListVOMXY.setId(StrUtil.toString(publish.getId()));
             for (UserInfo userInfo : userInfoList) {
-                if (userInfo.getUserId() == publish.getUserId()) {
+                if (ObjectUtil.equal(userInfo.getUserId(), publish.getUserId())) {
                     quanZiListVOMXY.setNickname(userInfo.getNickName());
                     quanZiListVOMXY.setUserId(userInfo.getUserId());
                     quanZiListVOMXY.setUserLogo(userInfo.getLogo());
@@ -419,14 +468,15 @@ public class QuanZiListVOImplMXY {
 
     /**
      * 圈子审核通过
+     *
      * @param ids
      * @return
      */
-    public Map<String,String> quanZiPass(List<ObjectId> ids){
+    public Map<String, String> quanZiPass(List<ObjectId> ids) {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if(quanZiStatusMXY.getStatus()!= 2){
+            if (quanZiStatusMXY.getStatus() != 2) {
                 quanZiStatusMXY.setStatus(2);
                 mongoTemplate.save(quanZiStatusMXY);
             }
@@ -436,14 +486,15 @@ public class QuanZiListVOImplMXY {
 
     /**
      * 圈子审核驳回
+     *
      * @param ids
      * @return
      */
-    public Map<String,String> quanZiReject(List<ObjectId> ids){
+    public Map<String, String> quanZiReject(List<ObjectId> ids) {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if(quanZiStatusMXY.getStatus()!= 3){
+            if (quanZiStatusMXY.getStatus() != 3) {
                 quanZiStatusMXY.setStatus(3);
                 mongoTemplate.save(quanZiStatusMXY);
             }
@@ -453,14 +504,15 @@ public class QuanZiListVOImplMXY {
 
     /**
      * 圈子状态撤销
+     *
      * @param ids
      * @return
      */
-    public Map<String,String> quanZiRevocation(List<ObjectId> ids){
+    public Map<String, String> quanZiRevocation(List<ObjectId> ids) {
         //先查询圈子状态
         List<QuanZiStatusMXY> QuanZiStatusMXYs = mongoTemplate.find(Query.query(Criteria.where("publishId").in(ids)), QuanZiStatusMXY.class);
         for (QuanZiStatusMXY quanZiStatusMXY : QuanZiStatusMXYs) {
-            if(quanZiStatusMXY.getStatus()!= 1){
+            if (quanZiStatusMXY.getStatus() != 1) {
                 quanZiStatusMXY.setStatus(1);
                 mongoTemplate.save(quanZiStatusMXY);
             }

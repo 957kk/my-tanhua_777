@@ -81,22 +81,22 @@ public class Verify_yt_Controller {
     @PostMapping("login")
     public Map<String, String> login(@RequestBody Map<String, String> params) {
 
-     /*   try {
+        try {
             String vCode = params.get("uuid");
 
             String o = (String) redisTemplate.opsForValue().get(vCode);
 
-            if (o.equals(params.get("verificationCode"))) {*/
+            if (o.equals(params.get("verificationCode"))) {
                 String token = verification_yt_Service.login(params.get("username"), params.get("password"));
                 if (StringUtils.isNotEmpty(token)) {
                     Map<String, String> map = new HashMap<>();
                     map.put("token", token);
                     return map;
                 }
-       /*     }
+            }
         } catch (Exception e) {
             log.error("验证码验证失败" + e);
-        }*/
+        }
         return null;
     }
 

@@ -24,7 +24,7 @@ public class LogRetained_yt implements Serializable {
     //ip：可以给固定数据
     private String ip;
     //操作时间
-    private Date  time;
+    private Long  time;
     //操作内容  1.删除内容，2.修改栏目，3.内容审核通过
     private String o;
     //操作描述

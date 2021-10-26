@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("log")
-@RocketMQMessageListener(topic = "tanhua", consumerGroup = "sbp")
+@RocketMQMessageListener(topic = "tanhua", consumerGroup = "tanhua")
 public class LogRetained_yt_controller implements RocketMQListener<LogRetained_yt> {
 
     @Autowired
@@ -28,7 +28,7 @@ public class LogRetained_yt_controller implements RocketMQListener<LogRetained_y
       // logRetained_yt.setId(2);
         logRetained_yt.setUsername(StrUtil.toString( param.get("username")));
         logRetained_yt.setIp(StrUtil.toString( param.get("ip")));
-        logRetained_yt.setTime(new Date());
+       // logRetained_yt.setTime(new Date());
         logRetained_yt.setO(StrUtil.toString (param.get("Operation")) );
         logRetained_yt.setA(StrUtil.toString( param.get("Describe")));
 

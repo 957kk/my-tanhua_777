@@ -132,7 +132,7 @@ public class UserService {
             info.setLoginDevice("手机");
             this.userLogInfoMapper_zxk.insert(info);
 
-            this.rocketMQTemplate.convertAndSend("tanhua-sso-login", msg);
+          //  this.rocketMQTemplate.convertAndSend("tanhua-sso-login", msg);
         } catch (MessagingException e) {
             log.error("发送消息失败！", e);
         }
