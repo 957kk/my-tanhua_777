@@ -332,17 +332,28 @@ public class QuanZiListVOImplMXY {
         pageResultMXY.setPage(Convert.toInt(param.get("page")));
         pageResultMXY.setPagesize(Convert.toInt(param.get("pagesize")));
         List<QuanZiListVOMXY> quanZiList = getQuanZiList(param);
-        pageResultMXY.setCounts(quanZiList.size());
-        pageResultMXY.setPages(Convert.toInt(Math.ceil(quanZiList.size() / pageResultMXY.getPagesize())));
-        List<QuanZiListVOMXY> page = CollUtil.page(Convert.toInt(param.get("page")) - 1, Convert.toInt(param.get("pagesize")), quanZiList);
-        pageResultMXY.setItems(page);
+        pageResultMXY.setCounts(Convert.toInt(this.getCount(param)));
+        pageResultMXY.setPages(Convert.toInt(Math.ceil(pageResultMXY.getCounts() / pageResultMXY.getPagesize())));
+        //List<QuanZiListVOMXY> page = CollUtil.page(Convert.toInt(param.get("page")) - 1, Convert.toInt(param.get("pagesize")), quanZiList);
+        pageResultMXY.setItems(quanZiList);
         return pageResultMXY;
 
     }
 
-    private List<QuanZiListVOMXY> getQuanZiList(Map<String, String> param) {
-        List<QuanZiListVOMXY> quanZiListVOMXYList = null;
+
+    public long getCount(Map<String, String> param){
+        List<Publish> publishList = null;
         Query query = new Query();
+        if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
+            query.addCriteria(
+                    new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
+                            Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
+        }
+        if ("descending".equals(param.get("sortOrder"))) {
+            query.with(Sort.by(Sort.Order.desc("created")));
+        } else {
+            query.with(Sort.by(Sort.Order.asc("created")));
+        }
         List<UserInfo> userInfoList = null;
         if (StrUtil.isNotEmpty(param.get("id"))) {
             userInfoList = getUserInfoListByIds(Collections.singletonList(Convert.toLong(param.get("id"))));
@@ -351,10 +362,44 @@ public class QuanZiListVOImplMXY {
         } else {
             userInfoList = getUserInfoListByIds(null);
         }
+        //全部  all
+        if ("all".equals(param.get("state"))) {
+            publishList = mongoTemplate.find(query, Publish.class);
+        } else {
+            List<QuanZiStatusMXY> quanZiStatusMXYList = getquanZiStatusMXYListByState(param);
+            List<ObjectId> ids = CollUtil.getFieldValues(quanZiStatusMXYList, "publishId", ObjectId.class);
+            query.addCriteria(Criteria.where("id").in(ids));
+            publishList = mongoTemplate.find(query, Publish.class);
+
+        }
+
+        return publishList.size();
+
+
+    }
+
+    private List<QuanZiListVOMXY> getQuanZiList(Map<String, String> param) {
+        PageRequest pageRequest = PageRequest.of(Convert.toInt(param.get("page")) - 1, Convert.toInt(param.get("pagesize")));
+        List<QuanZiListVOMXY> quanZiListVOMXYList = null;
+        Query query = new Query();
         if (Convert.toLong(param.get("sd")) > 0 && Convert.toLong(param.get("ed")) > 0) {
             query.addCriteria(
-                    new Criteria().andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
+                    new Criteria("").andOperator(Criteria.where("created").lte(Convert.toLong(param.get("ed"))),
                             Criteria.where("created").gte(Convert.toLong(param.get("sd")))));
+        }
+        if ("descending".equals(param.get("sortOrder"))) {
+            query.with(Sort.by(Sort.Order.desc("created")));
+        } else {
+            query.with(Sort.by(Sort.Order.asc("created")));
+        }
+        query.with(pageRequest);
+        List<UserInfo> userInfoList = null;
+        if (StrUtil.isNotEmpty(param.get("id"))) {
+            userInfoList = getUserInfoListByIds(Collections.singletonList(Convert.toLong(param.get("id"))));
+            List<Long> userId = CollUtil.getFieldValues(userInfoList, "userId", Long.class);
+            query.addCriteria(Criteria.where("userId").in(userId));
+        } else {
+            userInfoList = getUserInfoListByIds(null);
         }
         //全部  all
         if ("all".equals(param.get("state"))) {
@@ -369,12 +414,6 @@ public class QuanZiListVOImplMXY {
             List<Publish> publishList = mongoTemplate.find(query, Publish.class);
             quanZiListVOMXYList = getFullquanZiListVOMXY(publishList, userInfoList, quanZiStatusMXYList);
         }
-        if ("descending".equals(param.get("sortOrder"))) {
-            quanZiListVOMXYList.sort(Comparator.comparing(QuanZiListVOMXY::getCreateDate).reversed());
-        } else {
-            quanZiListVOMXYList.sort(Comparator.comparing(QuanZiListVOMXY::getCreateDate));
-        }
-
 
         return quanZiListVOMXYList;
     }

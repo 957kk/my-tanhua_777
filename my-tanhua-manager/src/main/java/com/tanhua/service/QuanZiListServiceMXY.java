@@ -137,28 +137,28 @@ public class QuanZiListServiceMXY {
             totalsVOMXY0.setCode("all");
             totalsVOMXY0.setTitle("全部");
             param.put("state","all");
-            totalsVOMXY0.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totalsVOMXY0.setValues(quanZiListVOImplMXY.getCount(param));
             totals.add(0, totalsVOMXY0);
             //待审核 2
             TotalsVOMXY totalsVOMXY1 = new TotalsVOMXY();
             totalsVOMXY1.setCode("3");
             totalsVOMXY1.setTitle("待审核");
             param.put("state","3");
-            totalsVOMXY1.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totalsVOMXY1.setValues(quanZiListVOImplMXY.getCount(param));
             totals.add(1, totalsVOMXY1);
             //已通过 3
             TotalsVOMXY totalsVOMXY2 = new TotalsVOMXY();
             totalsVOMXY2.setCode("2");
             totalsVOMXY2.setTitle("已通过");
             param.put("state","2");
-            totalsVOMXY2.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totalsVOMXY2.setValues(quanZiListVOImplMXY.getCount(param));
             totals.add(2, totalsVOMXY2);
             //已拒绝 4
             TotalsVOMXY totalsVOMXY3 = new TotalsVOMXY();
             totalsVOMXY3.setCode("4");
             totalsVOMXY3.setTitle("已拒绝");
             param.put("state","4");
-            totalsVOMXY3.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totalsVOMXY3.setValues(quanZiListVOImplMXY.getCount(param));
             totals.add(3, totalsVOMXY3);
             pageResultMXY.setTotals(totals);
         }
