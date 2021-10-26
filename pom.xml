@@ -160,6 +160,13 @@
                 <artifactId>aliyun-java-sdk-core</artifactId>
                 <version>4.5.3</version>
             </dependency>
+           <!-- 阿里云第三方动态审核依赖-->
+            <dependency>
+                <groupId>com.aliyun</groupId>
+                <artifactId>aliyun-java-sdk-green</artifactId>
+                <version>3.6.5</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.tobato</groupId>
                 <artifactId>fastdfs-client</artifactId>

@@ -1,16 +1,20 @@
 package com.tanhua.service;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.tanhua.impl.QuanZiListVOImplMXY;
 import com.tanhua.vo.PageResultMXY;
 import com.tanhua.vo.QuanZiListVOMXY;
+import com.tanhua.vo.TotalsVOMXY;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -98,5 +102,123 @@ public class QuanZiListServiceMXY {
 
 
         return result;
+    }
+
+    public PageResultMXY quanZiListCheck(String uid,String id,String pagesize,String page,String sd,String ed,String state,String sortProp, String sortOrder){
+        if(StrUtil.isAllEmpty(uid,id,pagesize,page,sd,ed,state,sortProp,sortOrder)){
+            log.error("查询圈子状态参数为空");
+            return null;
+        }
+        Map<String,String> param = new HashMap<>();
+        param.put("uid",uid);
+        param.put("id",id);
+        param.put("pagesize",pagesize);
+        param.put("page",page);
+        param.put("sd",sd);
+        param.put("ed",ed);
+        param.put("state",state);
+        param.put("sortProp",sortProp);
+        param.put("sortOrder",sortOrder);
+        PageResultMXY pageResultMXY = new PageResultMXY();
+        if(StrUtil.isNotEmpty(uid)){
+             pageResultMXY = queryQuanZiList(uid, page, pagesize,  sortProp, sortOrder);
+        }else {
+            pageResultMXY = quanZiListVOImplMXY.quanZiListCheck(param);
+            if(ObjectUtil.isEmpty(pageResultMXY)){
+                log.error("查询圈子状态出错");
+                return null;
+            }
+            List<TotalsVOMXY> totals = new ArrayList<>();
+            //根据圈子状态，查询圈子总条数
+            //全部 0
+            TotalsVOMXY totalsVOMXY0 = new TotalsVOMXY();
+            totalsVOMXY0.setCode(0);
+            totalsVOMXY0.setTitle("全部");
+            param.put("state","0");
+            totalsVOMXY0.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totals.add(0, totalsVOMXY0);
+            //待审核 1
+            TotalsVOMXY totalsVOMXY1 = new TotalsVOMXY();
+            totalsVOMXY1.setCode(1);
+            totalsVOMXY1.setTitle("待审核");
+            param.put("state","1");
+            totalsVOMXY1.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totals.add(1, totalsVOMXY1);
+            //已通过 2
+            TotalsVOMXY totalsVOMXY2 = new TotalsVOMXY();
+            totalsVOMXY2.setCode(2);
+            totalsVOMXY2.setTitle("已通过");
+            param.put("state","2");
+            totalsVOMXY2.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totals.add(2, totalsVOMXY2);
+            //已拒绝 3
+            TotalsVOMXY totalsVOMXY3 = new TotalsVOMXY();
+            totalsVOMXY3.setCode(3);
+            totalsVOMXY3.setTitle("已拒绝");
+            param.put("state","3");
+            totalsVOMXY3.setValues(Convert.toLong(quanZiListVOImplMXY.quanZiListCheck(param).getCounts()));
+            totals.add(3, totalsVOMXY3);
+            pageResultMXY.setTotals(totals);
+        }
+
+        return pageResultMXY;
+    }
+
+
+    /**
+     * 圈子审核通过
+     * @param ids
+     * @return
+     */
+    public Map<String,String> quanZiPass(List<String> ids){
+        if(ids.size()==0){
+            log.error("圈子审核参数为空");
+            return null;
+        }
+        List<ObjectId> idList = new ArrayList<>();
+        for (String id : ids) {
+            idList.add(new ObjectId(id));
+        }
+        Map<String, String> map = quanZiListVOImplMXY.quanZiPass(idList);
+        map.put("message","操作成功");
+        return map;
+    }
+
+    /**
+     * 圈子审核驳回
+     * @param ids
+     * @return
+     */
+    public Map<String,String> quanZiReject(List<String> ids){
+        if(ids.size()==0){
+            log.error("圈子审核参数为空");
+            return null;
+        }
+        List<ObjectId> idList = new ArrayList<>();
+        for (String id : ids) {
+            idList.add(new ObjectId(id));
+        }
+        Map<String, String> map = quanZiListVOImplMXY.quanZiReject(idList);
+        map.put("message","操作成功");
+        return map;
+    }
+
+    /**
+     * 圈子状态撤销
+     * @param ids
+     * @return
+     */
+    public Map<String,String> quanZiRevocation(List<String> ids){
+        if(ids.size()==0){
+            log.error("圈子审核参数为空");
+            return null;
+        }
+        List<ObjectId> idList = new ArrayList<>();
+        for (String id : ids) {
+            idList.add(new ObjectId(id));
+        }
+        Map<String, String> map = quanZiListVOImplMXY.quanZiRevocation(idList);
+        map.put("message","操作成功");
+        return map;
     }
 }

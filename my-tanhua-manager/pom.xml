@@ -39,25 +39,25 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-          <!--dubbo的springboot支持-->
-          <dependency>
-              <groupId>com.alibaba.boot</groupId>
-              <artifactId>dubbo-spring-boot-starter</artifactId>
-          </dependency>
-          <!--dubbo框架-->
-          <dependency>
-              <groupId>com.alibaba</groupId>
-              <artifactId>dubbo</artifactId>
-          </dependency>
-          <!--zk依赖-->
-          <dependency>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-          </dependency>
-          <dependency>
-              <groupId>com.github.sgroschupf</groupId>
-              <artifactId>zkclient</artifactId>
-          </dependency>
+        <!--dubbo的springboot支持-->
+        <dependency>
+            <groupId>com.alibaba.boot</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+        </dependency>
+        <!--dubbo框架-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+        </dependency>
+        <!--zk依赖-->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.sgroschupf</groupId>
+            <artifactId>zkclient</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -105,6 +105,15 @@
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-spring-boot-starter</artifactId>
         </dependency>
+
+        <!-- 阿里云第三方动态审核依赖-->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-green</artifactId>
+            <version>3.6.5</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.github.tobato</groupId>
             <artifactId>fastdfs-client</artifactId>
@@ -117,7 +126,6 @@
             </exclusions>
         </dependency>
     </dependencies>
-
 
 
 </project>

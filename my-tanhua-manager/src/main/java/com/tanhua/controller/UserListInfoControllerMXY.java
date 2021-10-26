@@ -1,5 +1,6 @@
 package com.tanhua.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.tanhua.common.pojo.UserFreezeMXY;
 import com.tanhua.service.*;
@@ -11,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -86,7 +87,7 @@ public class UserListInfoControllerMXY {
      * @param sortOrder 正序/倒叙
      * @return
      */
-    @GetMapping("/messages")
+    //@GetMapping("/messages")
     public ResponseEntity<PageResultMXY> queryQuanZiList(String uid, String page, String pagesize, String sortProp, String sortOrder) {
         try {
             PageResultMXY pageResultMXY = quanZiListServiceMXY.queryQuanZiList(uid, page, pagesize, sortProp, sortOrder);
@@ -254,5 +255,79 @@ public class UserListInfoControllerMXY {
         }
         result.put("message","操作失败");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+    }
+
+    /**
+     *  圈子审核
+     *
+
+     * @return
+     */
+    @GetMapping("/messages")
+
+    public ResponseEntity<PageResultMXY> quanZiListCheck(String uid,String id,String pagesize,String page,String sd,String ed,String state,String sortProp, String sortOrder){
+        try {
+            PageResultMXY pageResultMXY = quanZiListServiceMXY.quanZiListCheck(uid,id,pagesize,page,sd,ed,state,sortProp,sortOrder);
+            if (ObjectUtil.isNotEmpty(pageResultMXY)) {
+                return ResponseEntity.ok(pageResultMXY);
+            }
+        } catch (Exception e) {
+            log.error("查询圈子状态记录出错 state = " + state , e);
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    /**
+     * 圈子审核通过
+     * @param ids
+     * @return
+     */
+    @PostMapping("/messages/pass")
+    public ResponseEntity<Map<String,String>> quanZiPass(@RequestBody List<String> ids){
+        try {
+            Map<String, String> result = quanZiListServiceMXY.quanZiPass(ids);
+            if (CollUtil.isNotEmpty(result)) {
+                return ResponseEntity.ok(result);
+            }
+        } catch (Exception e) {
+            log.error("查询审核通过出错 ids = " + ids , e);
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    /**
+     * 圈子审核驳回
+     * @param ids
+     * @return
+     */
+    @PostMapping("/messages/reject")
+    public ResponseEntity<Map<String,String>> quanZiReject(@RequestBody List<String> ids){
+        try {
+            Map<String, String> result = quanZiListServiceMXY.quanZiReject(ids);
+            if (CollUtil.isNotEmpty(result)) {
+                return ResponseEntity.ok(result);
+            }
+        } catch (Exception e) {
+            log.error("查询审核驳回出错 ids = " + ids , e);
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    /**
+     * 圈子状态撤回
+     * @param ids
+     * @return
+     */
+    @PostMapping("/messages/revocation")
+    public ResponseEntity<Map<String,String>>  quanZiRevocation(@RequestBody List<String> ids){
+        try {
+            Map<String, String> result = quanZiListServiceMXY.quanZiRevocation(ids);
+            if (CollUtil.isNotEmpty(result)) {
+                return ResponseEntity.ok(result);
+            }
+        } catch (Exception e) {
+            log.error("查询审核撤销出错 ids = " + ids , e);
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
