@@ -3,6 +3,8 @@ package com.tanhua.controller;
 import cn.hutool.core.util.StrUtil;
 import com.tanhua.common.pojo.LogRetained_yt;
 import com.tanhua.service.LogRetained_yt_ApiImpl;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +14,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("log")
-public class LogRetained_yt_controller {
+@RocketMQMessageListener(topic = "tanhua", consumerGroup = "sbp")
+public class LogRetained_yt_controller implements RocketMQListener<LogRetained_yt> {
 
     @Autowired
     LogRetained_yt_ApiImpl logRetained_yt_ApiImpl;
@@ -59,4 +62,13 @@ public class LogRetained_yt_controller {
         return logRetained_yt;
     }
 
+
+    /**
+     * mq接收实体类进行封装
+     * @param logRetained_yt
+     */
+    @Override
+    public void onMessage(LogRetained_yt logRetained_yt) {
+      this.logRetained_yt_ApiImpl.saveLogRetained(logRetained_yt);
+    }
 }
