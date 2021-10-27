@@ -2,6 +2,7 @@ package com.tanhua.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.tanhua.common.pojo.LogRetained_yt;
+import com.tanhua.common.utils.NoAuthorization;
 import com.tanhua.service.LogRetained_yt_ApiImpl;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -23,6 +24,7 @@ public class LogRetained_yt_controller implements RocketMQListener<LogRetained_y
 
 
     @PostMapping("save")
+    @NoAuthorization
     public Boolean saveLogRetained(@RequestBody Map<String, Object> param){
         LogRetained_yt logRetained_yt = new LogRetained_yt();
       // logRetained_yt.setId(2);
@@ -37,6 +39,7 @@ public class LogRetained_yt_controller implements RocketMQListener<LogRetained_y
     }
 
     @PostMapping("findall")
+    @NoAuthorization
     public  List<LogRetained_yt> findAll(){
 
         List<LogRetained_yt> all = logRetained_yt_ApiImpl.findAll();
@@ -53,11 +56,12 @@ public class LogRetained_yt_controller implements RocketMQListener<LogRetained_y
      */
 
     @PostMapping("findbyid")
+    @NoAuthorization
     public LogRetained_yt findById(@RequestBody Map<String, Object> param){
 
 
         LogRetained_yt logRetained_yt =   logRetained_yt_ApiImpl.findById(Integer.parseInt((String) param.get("id")));
-        System.out.println(logRetained_yt);
+
 
         return logRetained_yt;
     }

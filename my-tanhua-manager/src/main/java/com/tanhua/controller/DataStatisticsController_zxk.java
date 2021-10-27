@@ -3,6 +3,7 @@ package com.tanhua.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.tanhua.common.pojo.DailyDate;
 import com.tanhua.common.pojo.VerifyCode;
+import com.tanhua.common.utils.NoAuthorization;
 import com.tanhua.common.utils.VerifyThreadLocal;
 import com.tanhua.service.DataStatisticsService;
 import com.tanhua.vo.RegistrationVo;
@@ -38,6 +39,7 @@ public class DataStatisticsController_zxk {
      * @return
      */
     @GetMapping("dailyDate")
+    @NoAuthorization
     public ResponseEntity<Object> dailyDate(Long sd, Long ed, Integer sex) {
         VerifyCode code = VerifyThreadLocal.get();
         try {
@@ -62,6 +64,7 @@ public class DataStatisticsController_zxk {
      * @return
      */
     @GetMapping("registration")
+    @NoAuthorization
     public ResponseEntity<Object> registrationOfRetained(Long sd, Long ed, Integer sex) {
         VerifyCode code = VerifyThreadLocal.get();
         try {

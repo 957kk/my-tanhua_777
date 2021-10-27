@@ -8,7 +8,8 @@ import java.util.List;
  * 由省获取所归属地区
  */
 public class FromCityToProvince {
-    private FromCityToProvince(){}
+    private FromCityToProvince() {
+    }
 
 
     public static List<String[]> allCity() {
@@ -57,7 +58,7 @@ public class FromCityToProvince {
         allCityList.add(new String[]{"拉萨", "昌都地区", "山南地区", "阿里地区", "那曲地区", "林芝地区", "日喀则地区"});
         allCityList.add(new String[]{"香港", "中西区", "东区", "南区", "湾仔区", "九龙城区", "观塘区", "深水埗区", "黄大仙区", "油尖旺区", "离岛区", "葵青区", "北区", "西贡区", "沙田区", "大埔区", "荃湾区", "屯门区", "元朗区"});
         allCityList.add(new String[]{"澳门", "花地玛堂区", "圣安多尼堂区", "大堂区", "望德堂区", "风顺堂区", "嘉模堂区", "圣方济各堂区"});
-        allCityList.add(new String[]{"台湾", "基隆市", "嘉义市", "新竹市", "中华台北", "台中市", "台南市", "新北市", "高雄市", "桃园市"});
+        allCityList.add(new String[]{"台湾", "基隆", "嘉义", "新竹", "中华台北", "台中", "台南", "新北", "高雄", "桃园"});
 
 
         return allCityList;
@@ -176,7 +177,8 @@ public class FromCityToProvince {
 
         allProvinceList.add(new String[]{"山东", "江苏", "江西", "浙江", "安徽", "福建", "上海"});
         allProvinceList.add(new String[]{"新疆", "青海", "西藏", "四川", "重庆", "云南", "宁夏", "陕西", "甘肃", "内蒙古"});
-        allProvinceList.add(new String[]{"广东", "广西", "海南", "香港", "澳门", "台湾"});
+        allProvinceList.add(new String[]{"广东", "广西", "海南"});
+        allProvinceList.add(new String[]{"香港", "澳门", "台湾"});
         allProvinceList.add(new String[]{"北京", "天津", "河北", "山西", "内蒙古", "黑龙江", "吉林", "辽宁"});
         allProvinceList.add(new String[]{"湖北", "湖南", "河南"});
         return allProvinceList;
@@ -187,6 +189,7 @@ public class FromCityToProvince {
         list.add("华东地区");
         list.add("华西地区");
         list.add("华南地区");
+        list.add("港澳台地区");
         list.add("华北地区");
         list.add("华中地区");
         return list;

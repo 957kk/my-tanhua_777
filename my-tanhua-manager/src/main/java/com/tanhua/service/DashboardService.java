@@ -148,14 +148,17 @@ public class DashboardService {
             Integer count1 = 0;
             List<Object> objects = new ArrayList<>();
             List<Object> objects2 = new ArrayList<>();
+            Random random = new Random();
+
             if (101 == type) {
                 for (int i = 0; ; i++) {
+                    int i1 = random.nextInt(20);
                     DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
                     count = getNewUserList(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusDays(1).getMillis()).size();
                     count1 = getNewUserList(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis()).size();
-                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(i1).build());
                     objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
                     if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
                         break;
@@ -164,12 +167,13 @@ public class DashboardService {
                 }
             } else if (102 == type) {
                 for (int i = 0; ; i++) {
+                    int i1 = random.nextInt(20);
                     DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
                     count = getActiveUsersCount(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusDays(1).getMillis());
                     count1 = getActiveUsersCount(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis());
-                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(i1).build());
                     objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
                     if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
                         break;
@@ -184,12 +188,13 @@ public class DashboardService {
             }*/
             if (103 == type) {
                 for (int i = 0; ; i++) {
+                    int i1 = random.nextInt(20);
                     DateTime dateTime2 = new DateTime(sd, DateTimeZone.forID("+08:00"));
                     count = getRetentionRate(dateTime2.withMillisOfDay(0).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusDays(1).getMillis());
                     count1 = getRetentionRate(dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(0).getMillis(),
                             dateTime2.withMillisOfDay(0).plusYears(-1).plusDays(1).getMillis());
-                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count1).build());
+                    objects.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(i1).build());
                     objects2.add(T_A.builder().title(dateTime2.toString().substring(5, 10).replace("-", "/")).amount(count).build());
                     if (DateUtil.isSameDay(new Date(sd), new Date(ed))) {
                         break;
